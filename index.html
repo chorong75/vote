@@ -47,8 +47,8 @@ table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,
 <header>
   <div class="top">
     <div class="brand" onclick="go('vote')" title="학생 투표 화면으로 이동">
-      <h1 id="topTitle">대덕고등학교 47대 학생회장 선거</h1>
-      <p>SchoolVote v1.0 · 실시간 전자 투표</p>
+      <h1 id="topTitle">학생회장 선거</h1>
+      <p>SchoolVote v1.0 · 안정형 Firebase 구조</p>
     </div>
     <div class="nav">
       <button class="navBtn" data-screen="monitor" onclick="go('monitor')">실시간 현황</button>
@@ -109,7 +109,7 @@ table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,
       <div class="className" style="font-size:30px" id="loginTarget">관리자 설정</div>
     </div>
     <label>비밀번호</label>
-    <input id="passwordInput" type="password" placeholder="비밀번호를 입력하세요" onkeydown="if(event.key==='Enter') login()"/>
+    <input id="passwordInput" type="password" placeholder="초기 비밀번호: 0000" onkeydown="if(event.key==='Enter') login()"/>
     <button style="width:100%;margin-top:14px" onclick="login()">관리자 로그인</button>
   </div>
 </section>
@@ -207,14 +207,14 @@ import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, quer
 
 const ELECTION_ID="mainElection";
 const DEFAULT_SETTINGS={
-  password:"0000",schoolName:"대덕고등학교",electionName:"47대 학생회장 선거",gradeCount:3,classCount:10,
+  password:"0000",schoolName:"○○고등학교",electionName:"47대 학생회장 선거",gradeCount:3,classCount:10,
   candidates:[{num:1,name:"후보1"},{num:2,name:"후보2"},{num:3,name:"후보3"}],
   classes:{}
 };
 const DEFAULT_STATIONS={
-  grade1:{name:"제 1투표소",grade:1,currentClass:"1-1",isOpen:false},
-  grade2:{name:"제 2투표소",grade:2,currentClass:"2-1",isOpen:false},
-  grade3:{name:"제 3투표소",grade:3,currentClass:"3-1",isOpen:false}
+  grade1:{name:"제1투표소",grade:1,currentClass:"1-1",isOpen:false},
+  grade2:{name:"제2투표소",grade:2,currentClass:"2-1",isOpen:false},
+  grade3:{name:"제3투표소",grade:3,currentClass:"3-1",isOpen:false}
 };
 let settings=structuredClone(DEFAULT_SETTINGS), stations=structuredClone(DEFAULT_STATIONS), votes=[];
 let local=JSON.parse(localStorage.getItem("schoolVoteV1Local")||'{"tabletStation":"grade1","selectedCandidate":null,"targetAfterLogin":"admin","activeTarget":"vote"}');
@@ -227,6 +227,12 @@ window.saveLocal=()=>localStorage.setItem("schoolVoteV1Local",JSON.stringify({ta
 function msg(text,type="ok"){
   const el=document.getElementById("msg"); el.textContent=text; el.className=`msg show ${type}`;
   clearTimeout(window.__msg); window.__msg=setTimeout(()=>el.className="msg",3500);
+}
+function withTimeout(promise, ms=8000, label="작업"){
+  return Promise.race([
+    promise,
+    new Promise((_, reject)=>setTimeout(()=>reject(new Error(`${label} 시간이 초과되었습니다. Firebase 연결/권한을 확인하세요.`)), ms))
+  ]);
 }
 function setNav(id){document.querySelectorAll(".navBtn").forEach(b=>b.classList.toggle("active",b.dataset.screen===id));}
 window.go=function(id){local.activeTarget=id;saveLocal();show(id);}
@@ -283,13 +289,28 @@ async function initFirebase(){
 }
 async function saveSettingsDoc(){
   if(!db){msg("Firebase 설정이 필요합니다.","err");return false;}
-  try{ensureClasses();await setDoc(doc(db,"schoolVoteV1",ELECTION_ID,"config","settings"),settings);return true}
-  catch(e){console.error(e);msg("설정 저장 실패: Firestore 권한/연결을 확인하세요.","err");return false}
+  try{
+    ensureClasses();
+    await withTimeout(setDoc(doc(db,"schoolVoteV1",ELECTION_ID,"config","settings"),settings), 8000, "설정 저장");
+    return true;
+  }catch(e){
+    console.error(e);
+    msg(e.message || "설정 저장 실패: Firestore 권한/연결을 확인하세요.","err");
+    alert(e.message || "설정 저장 실패");
+    return false;
+  }
 }
 async function saveStationsDoc(){
   if(!db){msg("Firebase 설정이 필요합니다.","err");return false;}
-  try{await setDoc(doc(db,"schoolVoteV1",ELECTION_ID,"config","stations"),stations);return true}
-  catch(e){console.error(e);msg("투표소 저장 실패: Firestore 권한/연결을 확인하세요.","err");return false}
+  try{
+    await withTimeout(setDoc(doc(db,"schoolVoteV1",ELECTION_ID,"config","stations"),stations), 8000, "투표소 저장");
+    return true;
+  }catch(e){
+    console.error(e);
+    msg(e.message || "투표소 저장 실패: Firestore 권한/연결을 확인하세요.","err");
+    alert(e.message || "투표소 저장 실패");
+    return false;
+  }
 }
 function countVotes(classKey,candidateNum=null){return votes.filter(v=>v.classKey===classKey&&(candidateNum==null||Number(v.candidateNum)===Number(candidateNum))).length}
 function classTotal(k){return settings.classes[k]?.total||0}
@@ -368,13 +389,55 @@ function renderTotals(){
 }
 window.addCandidate=function(){const next=settings.candidates.length?Math.max(...settings.candidates.map(c=>Number(c.num)))+1:1;settings.candidates.push({num:next,name:`후보${next}`});markDirty();renderSetup();}
 window.removeCandidate=function(i){if(settings.candidates.length<=1)return alert("후보는 최소 1명 이상이어야 합니다.");settings.candidates.splice(i,1);markDirty();renderSetup();}
-window.applyBulkTotal=async function(){const v=Number(document.getElementById("bulkTotal").value);if(!confirm(`전체 반 재적을 ${v}명으로 적용하고 저장할까요?`))return;for(let g=1;g<=settings.gradeCount;g++)for(let c=1;c<=settings.classCount;c++){settings.classes[`${g}-${c}`]={grade:g,classNo:c,total:v}};const ok=await saveSettingsDoc();if(ok){dirty=false;msg(`전체 반 재적을 ${v}명으로 적용하고 저장했습니다.`);renderSetup();}}
-window.saveSettings=async function(){
-  settings.schoolName=document.getElementById("schoolName").value;settings.electionName=document.getElementById("electionName").value;settings.gradeCount=Number(document.getElementById("gradeCount").value);settings.classCount=Number(document.getElementById("classCount").value);ensureClasses();
-  const btn1=document.getElementById("saveSettingsBtn"),btn2=document.getElementById("saveTotalsBtn");[btn1,btn2].filter(Boolean).forEach(b=>{b.disabled=true;b.textContent="저장 중...";});
+window.applyBulkTotal=async function(){
+  const v=Number(document.getElementById("bulkTotal").value);
+  if(!confirm(`전체 반 재적을 ${v}명으로 적용하고 저장할까요?`))return;
+  for(let g=1;g<=settings.gradeCount;g++){
+    for(let c=1;c<=settings.classCount;c++){
+      settings.classes[`${g}-${c}`]={grade:g,classNo:c,total:v};
+    }
+  }
+  markDirty();
+  renderSetup();
+  msg("전체 반 재적을 화면에 적용했습니다. 저장 중...");
   const ok=await saveSettingsDoc();
-  [btn1,btn2].filter(Boolean).forEach(b=>{b.disabled=false;b.textContent="저장 완료";});
-  if(ok){dirty=false;document.getElementById("unsaved1")?.classList.add("hidden");document.getElementById("unsaved2")?.classList.add("hidden");msg("선거 설정과 학급별 재적이 저장되었습니다.");setTimeout(()=>{if(btn1)btn1.textContent="선거 설정 저장";if(btn2)btn2.textContent="학급별 재적 저장";},1800);}
+  if(ok){
+    dirty=false;
+    document.getElementById("unsaved1")?.classList.add("hidden");
+    document.getElementById("unsaved2")?.classList.add("hidden");
+    msg(`전체 반 재적을 ${v}명으로 적용하고 저장했습니다.`);
+    renderSetup();
+  }
+}
+window.saveSettings=async function(){
+  settings.schoolName=document.getElementById("schoolName").value;
+  settings.electionName=document.getElementById("electionName").value;
+  settings.gradeCount=Number(document.getElementById("gradeCount").value);
+  settings.classCount=Number(document.getElementById("classCount").value);
+  ensureClasses();
+
+  const btn1=document.getElementById("saveSettingsBtn");
+  const btn2=document.getElementById("saveTotalsBtn");
+  const buttons=[btn1,btn2].filter(Boolean);
+  buttons.forEach(b=>{
+    b.dataset.originalText=b.dataset.originalText || b.textContent;
+    b.disabled=true;
+    b.textContent="저장 중...";
+  });
+
+  const ok=await saveSettingsDoc();
+
+  buttons.forEach(b=>{ b.disabled=false; });
+  if(ok){
+    dirty=false;
+    document.getElementById("unsaved1")?.classList.add("hidden");
+    document.getElementById("unsaved2")?.classList.add("hidden");
+    buttons.forEach(b=>b.textContent="저장 완료");
+    msg("선거 설정과 학급별 재적이 저장되었습니다.");
+    setTimeout(()=>buttons.forEach(b=>b.textContent=b.dataset.originalText),1800);
+  }else{
+    buttons.forEach(b=>b.textContent=b.dataset.originalText);
+  }
 }
 function renderManage(){
   const wrap=document.getElementById("stationManage"); if(!wrap)return; wrap.innerHTML="";
