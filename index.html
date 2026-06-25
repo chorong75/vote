@@ -31,14 +31,14 @@ table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,
 </style>
 </head>
 <body>
-<header><div class="top"><div class="brand" onclick="go('vote')" title="메인화면으로 이동" style="cursor:pointer"><h1>학생회장 선거</h1><p>SchoolVote · 여러 태블릿 동시 투표 · Firebase 실시간 연동</p></div><div class="nav">
+<header><div class="top"><div class="brand" onclick="go('vote')" title="메인화면으로 이동" style="cursor:pointer"><h1>대덕고 47대 학생회장 선거</h1><p>SchoolVote · 여러 태블릿 동시 투표 · 실시간 연동</p></div><div class="nav">
 <button class="navBtn" data-screen="monitor" onclick="go('monitor')">실시간 현황</button>
 <button class="navBtn" data-screen="admin" onclick="goAdmin('admin')">관리자 설정</button>
 </div></div></header>
 <main>
 <section id="monitorScreen" class="screen hidden"><div class="card"><div class="row"><div><h2>실시간 현황</h2><p class="muted">공개 화면입니다. 후보별 득표수는 개표 결과 메뉴에서 확인합니다.</p></div><div class="pill wait" id="overallState">Firebase 연결 대기</div></div><div class="monitorSummary" id="monitorCards"></div></div></section>
 
-<section id="voteScreen" class="screen"><div class="grid"><div class="card"><h2>학생 투표 화면</h2><label>태블릿 투표소</label><select id="voteStationSelect" onchange="local.tabletStation=this.value; saveLocal(); render()"></select><div class="notice" style="margin-top:14px">학생은 이름·번호·학번을 입력하지 않습니다. 현재 투표소에 배정된 학급으로만 표가 누적됩니다.</div></div><div class="card"><div id="votePanel"><div class="voteHeader"><div class="title" id="voteElectionTitle">학생회 선거</div><div class="station" id="voteStationTitle">제1투표소</div><div class="muted" id="voteClassText">투표 대기 중</div></div><h2 style="margin-top:18px">후보를 선택하세요</h2><div class="candidateList" id="candidateList"></div><button class="voteButton" id="voteButton" onclick="castVote()" disabled>투표하기</button></div><div id="completePanel" class="complete hidden"><div class="check">✓</div><h2>투표가 완료되었습니다</h2><p class="muted">잠시 후 다음 학생 투표 화면으로 돌아갑니다.</p></div></div></div></section>
+<section id="voteScreen" class="screen"><div class="grid"><div class="card"><h2>학생 투표 화면</h2><label>태블릿 투표소</label><select id="voteStationSelect" onchange="local.tabletStation=this.value; saveLocal(); render()"></select><div class="notice" style="margin-top:14px">학생은 이름·번호·학번을 입력하지 않습니다. 현재 투표소에 배정된 학급으로만 표가 누적됩니다.</div></div><div class="card"><div id="votePanel"><div class="voteHeader"><div class="title" id="voteElectionTitle">학생회 선거</div><div class="station" id="voteStationTitle">제 1투표소</div><div class="muted" id="voteClassText">투표 대기 중</div></div><h2 style="margin-top:18px">후보를 선택하세요</h2><div class="candidateList" id="candidateList"></div><button class="voteButton" id="voteButton" onclick="castVote()" disabled>투표하기</button></div><div id="completePanel" class="complete hidden"><div class="check">✓</div><h2>투표가 완료되었습니다</h2><p class="muted">잠시 후 다음 학생 투표 화면으로 돌아갑니다.</p></div></div></div></section>
 
 <section id="loginScreen" class="screen hidden"><div class="card loginBox"><h2>관리자 비밀번호</h2><div class="selectedMenuBox"><div class="selectedMenuLabel">선택한 메뉴</div><div class="selectedMenuTitle" id="loginTargetTitle">관리자 메뉴</div></div><p class="muted" id="loginTargetDesc"></p><label>비밀번호</label><input id="passwordInput" type="password" placeholder="초기 비밀번호: 0000" onkeydown="if(event.key==='Enter') login()"/><button style="width:100%;margin-top:14px" onclick="login()">관리자 로그인</button></div></section>
 
@@ -67,8 +67,8 @@ import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, quer
 
 const defaultData={
   password:"0000", schoolName:"○○고등학교", electionName:"47대 학생회 선거", gradeCount:3, classCount:10, defaultTotal:28,
-  candidates:[{num:1,name:"김학생"},{num:2,name:"이학생"},{num:3,name:"박학생"}],
-  stations:{grade1:{name:"제1투표소",grade:1,currentClass:"1-1",isOpen:false},grade2:{name:"제2투표소",grade:2,currentClass:"2-1",isOpen:false},grade3:{name:"제3투표소",grade:3,currentClass:"3-1",isOpen:false}},
+  candidates:[{num:1,name:"윤금채, 김세현, 이자연"},{num:2,name:"위서준, 정지범, 강지수"},{num:3,name:"장인영, 장채윤, 이서준"}],
+  stations:{grade1:{name:"제 1투표소",grade:1,currentClass:"1-1",isOpen:false},grade2:{name:"제 2투표소",grade:2,currentClass:"2-1",isOpen:false},grade3:{name:"제 3투표소",grade:3,currentClass:"3-1",isOpen:false}},
   classes:{}
 };
 let data=structuredClone(defaultData);
