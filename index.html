@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>SchoolVote 테스트</title>
+  <style>
+    :root{
+      --blue:#2563eb;
+      --blue2:#1d4ed8;
+      --navy:#1e3a8a;
+      --soft:#eef6ff;
+      --soft2:#f8fbff;
+      --line:#d8e6f8;
+      --text:#172033;
+      --muted:#64748b;
+      --green:#16a34a;
+      --red:#dc2626;
+      --orange:#ea580c;
+      --white:#fff;
+      --shadow:0 14px 36px rgba(37,99,235,.09);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Pretendard","Noto Sans KR",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg,#edf6ff 0%,#ffffff 38%);
+    }
+    header{
+      background:rgba(255,255,255,.88);
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      z-index:100;
+      backdrop-filter:blur(12px);
+    }
+    .top{
+      max-width:1240px;
+      margin:0 auto;
+      padding:18px 22px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+    }
+    .brand h1{margin:0;font-size:23px;letter-spacing:-.04em;color:#10213f}
+    .brand p{margin:4px 0 0;font-size:13px;color:var(--muted)}
+    .nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .nav button{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--navy);
+      border-radius:999px;
+      padding:10px 13px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .nav button.active{background:var(--blue);border-color:var(--blue);color:#fff}
+    main{max-width:1240px;margin:24px auto 70px;padding:0 20px}
+    .card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:var(--shadow);
+    }
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    h2{margin:0 0 14px;font-size:22px;letter-spacing:-.04em}
+    h3{margin:18px 0 10px;font-size:16px}
+    .muted{color:var(--muted);font-size:13px;line-height:1.55}
+    button{
+      border:0;
+      border-radius:14px;
+      padding:12px 15px;
+      background:var(--blue);
+      color:#fff;
+      font-weight:1000;
+      cursor:pointer;
+      font-size:15px;
+    }
+    button.secondary{background:var(--soft);color:var(--navy);border:1px solid var(--line)}
+    button.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+    button.green{background:var(--green)}
+    button.red{background:var(--red)}
+    button.orange{background:var(--orange)}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    input,select{
+      width:100%;
+      padding:12px 13px;
+      border:1px solid var(--line);
+      border-radius:13px;
+      font-size:15px;
+      background:#fff;
+    }
+    label{display:block;font-weight:900;font-size:13px;margin:12px 0 6px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .row > *{flex:1}
+    .hidden{display:none!important}
+    .pill{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:8px 11px;border-radius:999px;
+      background:var(--soft);color:var(--navy);
+      font-weight:1000;font-size:13px;
+    }
+    .pill.live{background:#dcfce7;color:#166534}
+    .pill.stop{background:#fee2e2;color:#991b1b}
+    .pill.wait{background:#f1f5f9;color:#334155}
+    .stationCard{
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+      background:linear-gradient(180deg,#ffffff,#f8fbff);
+    }
+    .stationTop{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+    .stationName{font-size:19px;font-weight:1000;color:#10213f}
+    .currentClass{
+      background:var(--soft);
+      border:1px dashed #aac7f4;
+      border-radius:18px;
+      padding:18px;
+      text-align:center;
+      margin:12px 0;
+    }
+    .currentClass .big{font-size:42px;font-weight:1000;letter-spacing:-.05em;color:var(--navy)}
+    .bar{height:12px;background:#e5eefb;border-radius:999px;overflow:hidden;margin:10px 0}
+    .bar > div{height:100%;background:var(--blue);border-radius:999px;width:0%}
+    .classButtons{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+    .classButtons button{background:#fff;color:var(--navy);border:1px solid var(--line)}
+    .classButtons button.selected{background:var(--blue);color:#fff;border-color:var(--blue)}
+    .candidateList{display:grid;gap:13px;margin-top:18px}
+    .candidate{
+      border:2px solid var(--line);
+      border-radius:20px;
+      padding:18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:#fff;
+      cursor:pointer;
+      transition:.12s;
+    }
+    .candidate.selected{background:var(--soft);border-color:var(--blue)}
+    .candidate:hover{border-color:#9fc0f5}
+    .candidate .num{font-weight:1000;color:var(--navy);font-size:15px}
+    .candidate .name{font-size:30px;font-weight:1000;letter-spacing:-.04em}
+    .voteHeader{
+      text-align:center;
+      background:var(--soft2);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:20px;
+    }
+    .voteHeader .title{font-size:24px;font-weight:1000;letter-spacing:-.04em}
+    .voteHeader .station{font-size:42px;font-weight:1000;color:var(--navy);margin-top:10px}
+    .voteButton{width:100%;padding:22px;font-size:26px;border-radius:22px;margin-top:16px}
+    .complete{text-align:center;padding:70px 20px}
+    .complete .check{font-size:80px;color:var(--green);font-weight:1000}
+    .complete h2{font-size:34px}
+    .loginBox{max-width:460px;margin:50px auto}
+    .selectedMenuBox{
+      margin:14px 0;
+      padding:16px;
+      border-radius:18px;
+      background:var(--soft);
+      border:1px solid var(--line);
+      text-align:center;
+    }
+    .selectedMenuLabel{
+      color:var(--muted);
+      font-size:13px;
+      font-weight:900;
+      margin-bottom:5px;
+    }
+    .selectedMenuTitle{
+      color:var(--navy);
+      font-size:26px;
+      font-weight:1000;
+      letter-spacing:-.04em;
+    }
+    .notice{
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      color:#9a3412;
+      border-radius:16px;
+      padding:13px 15px;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.5;
+    }
+    table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}
+    th,td{border:1px solid #111;padding:9px;text-align:center;font-size:15px}
+    th{font-weight:1000;background:#f8fafc}
+    .resultTitle{text-align:center;font-size:34px;font-weight:1000;letter-spacing:.08em;margin:8px 0 24px}
+    .classReportGrid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #111;border-bottom:0;border-right:0}
+    .classBox{border-right:1px solid #111;border-bottom:1px solid #111;min-height:118px}
+    .classBox .classTitle{text-align:center;font-weight:1000;border-bottom:1px solid #111;padding:5px;background:#f8fafc}
+    .miniTable{width:100%;margin:0;border:0}
+    .miniTable th,.miniTable td{border:1px solid #111;border-top:0;padding:5px;font-size:12px}
+    .miniTable th:first-child,.miniTable td:first-child{border-left:0}
+    .miniTable th:last-child,.miniTable td:last-child{border-right:0}
+    .classSum{padding:7px;font-weight:1000;font-size:12px}
+    .printOnly{display:none}
+    .monitorSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .bigNum{font-size:34px;font-weight:1000;color:var(--navy);margin-top:4px}
+    @media(max-width:900px){
+      .grid,.grid3,.monitorSummary{grid-template-columns:1fr}
+      .classReportGrid{grid-template-columns:repeat(2,1fr)}
+      .top{align-items:flex-start;flex-direction:column}
+      .nav{justify-content:flex-start}
+      .candidate .name{font-size:25px}
+      .voteHeader .station{font-size:34px}
+    }
+    @media(max-width:560px){
+      main{padding:0 12px}
+      .card{padding:16px;border-radius:18px}
+      .classButtons{grid-template-columns:repeat(3,1fr)}
+      .classReportGrid{grid-template-columns:1fr}
+      .nav button{font-size:13px;padding:9px 10px}
+    }
+    @media print{
+      header,.noPrint,button{display:none!important}
+      body{background:white}
+      main{max-width:none;margin:0;padding:0}
+      .card{box-shadow:none;border:0;padding:0}
+      .screen{display:none!important}
+      #resultScreen{display:block!important}
+      .printOnly{display:block}
+      th,td{font-size:12px;padding:6px}
+      .resultTitle{font-size:28px}
+      .classReportGrid{grid-template-columns:repeat(4,1fr)}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="brand">
+      <h1>SchoolVote 테스트</h1>
+      <p>학년별 투표소 · 관리자 비밀번호 · 개인정보 미입력 · 결과 양식 자동 생성</p>
+    </div>
+    <div class="nav">
+      <button class="navBtn active" data-screen="monitor" onclick="go('monitor')">실시간 현황</button>
+      <button class="navBtn" data-screen="vote" onclick="go('vote')">학생 투표</button>
+      <button class="navBtn adminOnly" data-screen="setup" onclick="goAdmin('setup')">선거 설정</button>
+      <button class="navBtn adminOnly" data-screen="manage" onclick="goAdmin('manage')">투표 진행</button>
+      <button class="navBtn adminOnly" data-screen="result" onclick="goAdmin('result')">개표 결과</button>
+      <button class="navBtn adminOnly" data-screen="admin" onclick="goAdmin('admin')">관리자 설정</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="monitorScreen" class="screen">
+    <div class="card">
+      <div class="row">
+        <div>
+          <h2>실시간 현황</h2>
+          <p class="muted">비밀번호 없이 확인 가능한 화면입니다. 투표 종료 전에는 기호별 득표수는 공개하지 않는 운영을 권장합니다.</p>
+        </div>
+        <div class="pill wait" id="overallState">대기 중</div>
+      </div>
+      <div class="monitorSummary" id="monitorCards"></div>
+    </div>
+  </section>
+
+  <section id="voteScreen" class="screen hidden">
+    <div class="grid">
+      <div class="card">
+        <h2>학생 투표 화면 선택</h2>
+        <p class="muted">실제 운영에서는 투표소별 태블릿에 각각 고정 링크를 열어두면 됩니다.</p>
+        <label>태블릿 투표소</label>
+        <select id="voteStationSelect" onchange="state.tabletStation=this.value; save()"></select>
+        <div class="notice" style="margin-top:14px">학생은 이름·번호·학번을 입력하지 않습니다. 현재 투표소에 배정된 학급으로만 표가 누적됩니다.</div>
+      </div>
+      <div class="card" id="voteCard">
+        <div id="votePanel">
+          <div class="voteHeader">
+            <div class="title" id="voteElectionTitle">학생회 선거</div>
+            <div class="station" id="voteStationTitle">제1투표소</div>
+            <div class="muted" id="voteClassText">투표 대기 중</div>
+          </div>
+          <h2 style="margin-top:18px">후보를 선택하세요</h2>
+          <div class="candidateList" id="candidateList"></div>
+          <button class="voteButton" id="voteButton" onclick="castVote()" disabled>투표하기</button>
+        </div>
+        <div id="completePanel" class="complete hidden">
+          <div class="check">✓</div>
+          <h2>투표가 완료되었습니다</h2>
+          <p class="muted">잠시 후 다음 학생 투표 화면으로 돌아갑니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="loginScreen" class="screen hidden">
+    <div class="card loginBox">
+      <h2>관리자 비밀번호</h2>
+      <div class="selectedMenuBox">
+        <div class="selectedMenuLabel">선택한 메뉴</div>
+        <div class="selectedMenuTitle" id="loginTargetTitle">관리자 메뉴</div>
+      </div>
+      <p class="muted" id="loginTargetDesc">선거 설정, 투표 진행, 개표 결과, 관리자 설정은 비밀번호 입력 후 사용할 수 있습니다.</p>
+      <label>비밀번호</label>
+      <input id="passwordInput" type="password" placeholder="초기 비밀번호: 1234" onkeydown="if(event.key==='Enter') login()"/>
+      <button style="width:100%;margin-top:14px" onclick="login()">관리자 로그인</button>
+      <p class="muted">테스트 파일용 간단 잠금입니다. 실제 Firebase 버전에서는 별도 보안 규칙을 적용해야 합니다.</p>
+    </div>
+  </section>
+
+  <section id="setupScreen" class="screen hidden protected">
+    <div class="grid">
+      <div class="card">
+        <h2>선거 설정</h2>
+        <label>학교명</label>
+        <input id="schoolName" oninput="readSetup()"/>
+        <label>선거명</label>
+        <input id="electionName" oninput="readSetup()"/>
+        <div class="row">
+          <div>
+            <label>학년 수</label>
+            <input id="gradeCount" type="number" min="1" max="6" onchange="readSetup(true)"/>
+          </div>
+          <div>
+            <label>학년별 반 수</label>
+            <input id="classCount" type="number" min="1" max="20" onchange="readSetup(true)"/>
+          </div>
+          <div>
+            <label>반별 기본 재적</label>
+            <input id="defaultTotal" type="number" min="1" onchange="readSetup(true)"/>
+          </div>
+        </div>
+        <h3>후보 설정</h3>
+        <div id="candidateSettings"></div>
+        <div class="row">
+          <button class="secondary" onclick="addCandidate()">후보 추가</button>
+          <button class="ghost" onclick="save()">설정 저장</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>학급별 재적 입력</h2>
+        <p class="muted">기권표는 재적 - 투표 인원으로 자동 계산됩니다.</p>
+        <div id="classTotalInputs"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="manageScreen" class="screen hidden protected">
+    <div class="card">
+      <div class="row">
+        <div>
+          <h2>투표 진행</h2>
+          <p class="muted">학년별 투표소 3개를 동시에 운영하는 구조입니다.</p>
+        </div>
+        <button class="red noPrint" onclick="lockAdmin()">관리자 잠금</button>
+      </div>
+      <div class="grid3" id="stationManage"></div>
+    </div>
+  </section>
+
+  <section id="resultScreen" class="screen hidden protected">
+    <div class="card">
+      <div class="row noPrint" style="margin-bottom:10px">
+        <div>
+          <h2>개표 결과</h2>
+          <p class="muted">아래 표는 기존 학교 보고 양식과 비슷하게 출력되도록 구성했습니다.</p>
+        </div>
+        <button class="secondary" onclick="window.print()">PDF/인쇄</button>
+        <button class="ghost" onclick="downloadHTML()">HTML 저장</button>
+      </div>
+      <div id="resultOutput"></div>
+    </div>
+  </section>
+
+  <section id="adminScreen" class="screen hidden protected">
+    <div class="card loginBox">
+      <h2>관리자 설정</h2>
+      <label>관리자 비밀번호 변경</label>
+      <input id="newPassword" type="password" placeholder="새 비밀번호"/>
+      <button style="width:100%;margin-top:12px" onclick="changePassword()">비밀번호 변경</button>
+      <div class="notice" style="margin-top:14px">테스트 버전에서는 현재 브라우저에만 저장됩니다. 실제 배포용은 Firebase Authentication 또는 별도 관리자 키를 권장합니다.</div>
+      <button class="red" style="width:100%;margin-top:12px" onclick="factoryReset()">전체 테스트 데이터 초기화</button>
+    </div>
+  </section>
+</main>
+
+<script>
+const defaultState = {
+  password:"1234",
+  admin:false,
+  targetAfterLogin:"manage",
+  activeTarget:"monitor",
+  schoolName:"○○고등학교",
+  electionName:"46대 학생회 선거",
+  gradeCount:3,
+  classCount:10,
+  defaultTotal:28,
+  candidates:[
+    {num:1,name:"김학생"},
+    {num:2,name:"이학생"},
+    {num:3,name:"박학생"}
+  ],
+  stations:{
+    grade1:{name:"제1투표소", grade:1, currentClass:"1-1", isOpen:false},
+    grade2:{name:"제2투표소", grade:2, currentClass:"2-1", isOpen:false},
+    grade3:{name:"제3투표소", grade:3, currentClass:"3-1", isOpen:false}
+  },
+  classes:{},
+  tabletStation:"grade1",
+  selectedCandidate:null
+};
+let state = JSON.parse(localStorage.getItem("schoolVoteIndexV2") || "null") || structuredClone(defaultState);
+
+function ensureData(){
+  for(let g=1; g<=state.gradeCount; g++){
+    const stationKey = "grade"+g;
+    if(!state.stations[stationKey]) state.stations[stationKey] = {name:`제${g}투표소`, grade:g, currentClass:`${g}-1`, isOpen:false};
+    for(let c=1; c<=state.classCount; c++){
+      const key = `${g}-${c}`;
+      if(!state.classes[key]){
+        state.classes[key] = {grade:g,classNo:c,total:state.defaultTotal,invalid:0,votes:{}};
+      }
+      state.candidates.forEach(can=>{
+        if(state.classes[key].votes[can.num] === undefined) state.classes[key].votes[can.num]=0;
+      });
+    }
+  }
+  if(!state.tabletStation) state.tabletStation="grade1";
+}
+function save(){ ensureData(); localStorage.setItem("schoolVoteIndexV2",JSON.stringify(state)); render(); }
+const menuNames = {
+  monitor:"실시간 현황",
+  vote:"학생 투표",
+  setup:"선거 설정",
+  manage:"투표 진행",
+  result:"개표 결과",
+  admin:"관리자 설정"
+};
+function setActiveNav(id){
+  document.querySelectorAll(".navBtn").forEach(b=>{
+    b.classList.toggle("active", b.dataset.screen === id);
+  });
+}
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
+  document.getElementById(id+"Screen").classList.remove("hidden");
+  if(id !== "login") {
+    state.activeTarget = id;
+    setActiveNav(id);
+  } else {
+    setActiveNav(state.targetAfterLogin || "manage");
+    renderLoginTarget();
+  }
+  render();
+}
+function go(id){
+  state.activeTarget = id;
+  setActiveNav(id);
+  show(id);
+}
+function goAdmin(id){
+  state.targetAfterLogin = id;
+  state.activeTarget = id;
+  setActiveNav(id);
+  if(!state.admin){ show("login"); return; }
+  show(id);
+}
+function renderLoginTarget(){
+  const target = state.targetAfterLogin || "manage";
+  const name = menuNames[target] || "관리자 메뉴";
+  const titleEl = document.getElementById("loginTargetTitle");
+  const descEl = document.getElementById("loginTargetDesc");
+  if(titleEl) titleEl.textContent = name;
+  if(descEl) descEl.textContent = `${name}에 접근하려면 관리자 비밀번호를 입력하세요.`;
+}
+function login(){
+  const input = document.getElementById("passwordInput").value;
+  if(input === state.password){
+    state.admin=true;
+    document.getElementById("passwordInput").value="";
+    save();
+    show(state.targetAfterLogin || "manage");
+  }else{
+    alert("비밀번호가 맞지 않습니다.");
+  }
+}
+function lockAdmin(){ state.admin=false; state.activeTarget="monitor"; save(); show("monitor"); }
+function render(){
+  ensureData();
+  renderLoginTarget();
+  setActiveNav(state.activeTarget || "monitor");
+  renderSetup();
+  renderStations();
+  renderVote();
+  renderMonitor();
+  renderResults();
+}
+function readSetup(rebuild=false){
+  state.schoolName=document.getElementById("schoolName").value;
+  state.electionName=document.getElementById("electionName").value;
+  state.gradeCount=Number(document.getElementById("gradeCount").value);
+  state.classCount=Number(document.getElementById("classCount").value);
+  state.defaultTotal=Number(document.getElementById("defaultTotal").value);
+  if(rebuild) ensureData();
+  save();
+}
+function renderSetup(){
+  document.getElementById("schoolName").value=state.schoolName;
+  document.getElementById("electionName").value=state.electionName;
+  document.getElementById("gradeCount").value=state.gradeCount;
+  document.getElementById("classCount").value=state.classCount;
+  document.getElementById("defaultTotal").value=state.defaultTotal;
+  const candWrap=document.getElementById("candidateSettings");
+  candWrap.innerHTML="";
+  state.candidates.forEach((c,i)=>{
+    const div=document.createElement("div");
+    div.className="row";
+    div.innerHTML=`<input type="number" value="${c.num}" onchange="state.candidates[${i}].num=Number(this.value); save()">
+      <input value="${c.name}" onchange="state.candidates[${i}].name=this.value; save()">
+      <button class="ghost" onclick="removeCandidate(${i})">삭제</button>`;
+    candWrap.appendChild(div);
+  });
+  const classWrap=document.getElementById("classTotalInputs");
+  classWrap.innerHTML="";
+  for(let g=1; g<=state.gradeCount; g++){
+    const title=document.createElement("h3");
+    title.textContent=`${g}학년`;
+    classWrap.appendChild(title);
+    const grid=document.createElement("div");
+    grid.className="classButtons";
+    for(let c=1;c<=state.classCount;c++){
+      const key=`${g}-${c}`;
+      const input=document.createElement("input");
+      input.type="number"; input.value=state.classes[key]?.total ?? state.defaultTotal;
+      input.title=key;
+      input.onchange=()=>{state.classes[key].total=Number(input.value); save();};
+      grid.appendChild(input);
+    }
+    classWrap.appendChild(grid);
+  }
+}
+function addCandidate(){
+  const next = state.candidates.length ? Math.max(...state.candidates.map(c=>c.num))+1 : 1;
+  state.candidates.push({num:next,name:`후보${next}`});
+  save();
+}
+function removeCandidate(i){
+  if(state.candidates.length<=1){alert("후보는 최소 1명 이상이어야 합니다."); return;}
+  state.candidates.splice(i,1);
+  save();
+}
+function votedCount(cls){
+  return Object.values(cls.votes).reduce((a,b)=>a+b,0) + (cls.invalid||0);
+}
+function renderStations(){
+  const wrap=document.getElementById("stationManage");
+  wrap.innerHTML="";
+  for(let g=1; g<=state.gradeCount; g++){
+    const sk="grade"+g, st=state.stations[sk], cls=state.classes[st.currentClass];
+    const voted=cls?votedCount(cls):0, total=cls?.total||0, pct=total?Math.min(100,Math.round(voted/total*100)):0;
+    const box=document.createElement("div");
+    box.className="stationCard";
+    let classBtns="";
+    for(let c=1;c<=state.classCount;c++){
+      const key=`${g}-${c}`;
+      classBtns += `<button class="${st.currentClass===key?'selected':''}" onclick="selectClass('${sk}','${key}')">${key}</button>`;
+    }
+    box.innerHTML=`
+      <div class="stationTop">
+        <div class="stationName">${st.name} <span class="muted">(${g}학년)</span></div>
+        <div class="pill ${st.isOpen?'live':'stop'}">${st.isOpen?'진행 중':'대기'}</div>
+      </div>
+      <div class="currentClass">
+        <div class="big">${st.currentClass}</div>
+        <div class="muted">${voted} / ${total}명</div>
+        <div class="bar"><div style="width:${pct}%"></div></div>
+      </div>
+      <div class="row">
+        <button class="green" onclick="startStation('${sk}')">투표 시작</button>
+        <button class="red" onclick="stopStation('${sk}')">투표 종료</button>
+      </div>
+      <button class="secondary" style="width:100%;margin-top:8px" onclick="nextClass('${sk}')">다음 반</button>
+      <h3>학급 선택</h3>
+      <div class="classButtons">${classBtns}</div>
+      <button class="ghost" style="width:100%;margin-top:10px" onclick="resetClass('${st.currentClass}')">현재 반 결과 초기화</button>
+    `;
+    wrap.appendChild(box);
+  }
+}
+function selectClass(stationKey,classKey){
+  if(state.stations[stationKey].isOpen){ alert("투표 진행 중에는 학급을 바꿀 수 없습니다."); return; }
+  state.stations[stationKey].currentClass=classKey; save();
+}
+function startStation(sk){ state.stations[sk].isOpen=true; save(); }
+function stopStation(sk){ state.stations[sk].isOpen=false; save(); }
+function nextClass(sk){
+  const st=state.stations[sk];
+  if(st.isOpen){alert("투표 종료 후 다음 반으로 이동하세요."); return;}
+  const [g,c]=st.currentClass.split("-").map(Number);
+  const next = c < state.classCount ? `${g}-${c+1}` : `${g}-${c}`;
+  st.currentClass=next; save();
+}
+function resetClass(classKey){
+  if(!confirm(`${classKey} 결과를 초기화할까요?`)) return;
+  state.classes[classKey].invalid=0;
+  state.classes[classKey].votes={};
+  state.candidates.forEach(c=>state.classes[classKey].votes[c.num]=0);
+  save();
+}
+function renderVote(){
+  const select=document.getElementById("voteStationSelect");
+  select.innerHTML="";
+  for(let g=1; g<=state.gradeCount; g++){
+    const sk="grade"+g, st=state.stations[sk];
+    const opt=document.createElement("option");
+    opt.value=sk; opt.textContent=`${st.name} (${g}학년)`;
+    select.appendChild(opt);
+  }
+  select.value=state.tabletStation;
+  const st=state.stations[state.tabletStation] || state.stations.grade1;
+  const cls=state.classes[st.currentClass];
+  document.getElementById("voteElectionTitle").textContent=state.electionName;
+  document.getElementById("voteStationTitle").textContent=`${st.name}`;
+  document.getElementById("voteClassText").textContent=st.isOpen?`현재 투표 학급: ${st.currentClass}`:"현재 투표 대기 중";
+  const list=document.getElementById("candidateList");
+  list.innerHTML="";
+  state.candidates.forEach(c=>{
+    const div=document.createElement("div");
+    div.className="candidate"+(state.selectedCandidate===c.num?" selected":"");
+    div.onclick=()=>{ if(st.isOpen){ state.selectedCandidate=c.num; save(); } };
+    div.innerHTML=`<div><div class="num">기호 ${c.num}번</div><div class="name">${c.name}</div></div><div style="font-size:32px">${state.selectedCandidate===c.num?"●":"○"}</div>`;
+    list.appendChild(div);
+  });
+  const voted = cls ? votedCount(cls) : 0;
+  const full = cls && voted >= cls.total;
+  document.getElementById("voteButton").disabled=!(st.isOpen && state.selectedCandidate && !full);
+  document.getElementById("voteButton").textContent = full ? "재적 인원 도달" : "투표하기";
+}
+function castVote(){
+  const st=state.stations[state.tabletStation];
+  const cls=state.classes[st.currentClass];
+  if(!st.isOpen || !state.selectedCandidate || !cls) return;
+  if(votedCount(cls) >= cls.total){ alert("해당 학급 재적 인원에 도달했습니다."); return; }
+  cls.votes[state.selectedCandidate]=(cls.votes[state.selectedCandidate]||0)+1;
+  state.selectedCandidate=null;
+  localStorage.setItem("schoolVoteIndexV2",JSON.stringify(state));
+  document.getElementById("votePanel").classList.add("hidden");
+  document.getElementById("completePanel").classList.remove("hidden");
+  setTimeout(()=>{
+    document.getElementById("completePanel").classList.add("hidden");
+    document.getElementById("votePanel").classList.remove("hidden");
+    render();
+  },1200);
+}
+function renderMonitor(){
+  const anyOpen=Object.values(state.stations).some(s=>s.isOpen);
+  document.getElementById("overallState").className="pill "+(anyOpen?"live":"wait");
+  document.getElementById("overallState").textContent=anyOpen?"투표 진행 중":"대기 중";
+  const wrap=document.getElementById("monitorCards");
+  wrap.innerHTML="";
+  for(let g=1;g<=state.gradeCount;g++){
+    const st=state.stations["grade"+g], cls=state.classes[st.currentClass];
+    const voted=cls?votedCount(cls):0, total=cls?.total||0, pct=total?Math.min(100,(voted/total*100).toFixed(1)):0;
+    const div=document.createElement("div");
+    div.className="stationCard";
+    div.innerHTML=`
+      <div class="stationTop"><div class="stationName">${st.name}</div><div class="pill ${st.isOpen?'live':'stop'}">${st.isOpen?'진행':'대기'}</div></div>
+      <div class="muted">${g}학년 현재 학급</div>
+      <div class="bigNum">${st.currentClass}</div>
+      <div class="bar"><div style="width:${pct}%"></div></div>
+      <div class="muted">${voted} / ${total}명 · ${pct}%</div>
+    `;
+    wrap.appendChild(div);
+  }
+}
+function gradeTotals(){
+  const grades={};
+  for(let g=1;g<=state.gradeCount;g++) grades[g]={total:0,voted:0,abstain:0,invalid:0,candidate:{}};
+  Object.values(state.classes).forEach(cls=>{
+    if(cls.grade>state.gradeCount || cls.classNo>state.classCount) return;
+    const voted=votedCount(cls), abstain=Math.max(0,cls.total-voted);
+    grades[cls.grade].total += cls.total;
+    grades[cls.grade].voted += voted;
+    grades[cls.grade].abstain += abstain;
+    grades[cls.grade].invalid += cls.invalid||0;
+    state.candidates.forEach(c=>{
+      grades[cls.grade].candidate[c.num]=(grades[cls.grade].candidate[c.num]||0)+(cls.votes[c.num]||0);
+    });
+  });
+  return grades;
+}
+function renderResults(){
+  const grades=gradeTotals();
+  const totalVoters=Object.values(grades).reduce((a,g)=>a+g.total,0);
+  const totalVoted=Object.values(grades).reduce((a,g)=>a+g.voted,0);
+  const rate=totalVoters?((totalVoted/totalVoters)*100).toFixed(2):"0.00";
+  let html=`<div class="resultTitle">선거 개표 결과</div>`;
+  html+=`<table><tr><th colspan="${state.gradeCount}">선거인수</th><th colspan="${state.gradeCount}">투표자수</th><th>투표율</th></tr><tr>`;
+  for(let g=1;g<=state.gradeCount;g++) html+=`<th>${g}학년</th>`;
+  for(let g=1;g<=state.gradeCount;g++) html+=`<th>${g}학년</th>`;
+  html+=`<td rowspan="2">${rate}%</td></tr><tr>`;
+  for(let g=1;g<=state.gradeCount;g++) html+=`<td>${grades[g].total}</td>`;
+  for(let g=1;g<=state.gradeCount;g++) html+=`<td>${grades[g].voted}</td>`;
+  html+=`</tr><tr><td colspan="${state.gradeCount}">${totalVoters}</td><td colspan="${state.gradeCount}">${totalVoted}</td><td></td></tr></table>`;
+  html+=`<table><tr><th>기호</th>`;
+  for(let g=1;g<=state.gradeCount;g++) html+=`<th>${g}학년</th>`;
+  html+=`<th>계</th></tr>`;
+  state.candidates.forEach(c=>{
+    let sum=0; html+=`<tr><th>${c.num}번</th>`;
+    for(let g=1;g<=state.gradeCount;g++){ const v=grades[g].candidate[c.num]||0; sum+=v; html+=`<td>${v}</td>`; }
+    html+=`<td>${sum}표</td></tr>`;
+  });
+  let abstSum=0; html+=`<tr><th>기권</th>`;
+  for(let g=1;g<=state.gradeCount;g++){ abstSum+=grades[g].abstain; html+=`<td>${grades[g].abstain}</td>`; }
+  html+=`<td>${abstSum}표</td></tr>`;
+  html+=`<tr><th>계</th>`;
+  for(let g=1;g<=state.gradeCount;g++) html+=`<td>${grades[g].voted}</td>`;
+  html+=`<td>${totalVoted}표</td></tr></table>`;
+  for(let g=1;g<=state.gradeCount;g++){
+    html+=`<div class="resultTitle" style="font-size:24px;margin-top:30px">${state.electionName} 집계표(${g}학년)</div>`;
+    html+=`<div class="classReportGrid">`;
+    for(let c=1;c<=state.classCount;c++){
+      const cls=state.classes[`${g}-${c}`];
+      const voted=votedCount(cls), abstain=Math.max(0,cls.total-voted);
+      html+=`<div class="classBox"><div class="classTitle">${c}반</div><table class="miniTable"><tr>`;
+      state.candidates.forEach(can=>html+=`<th>${can.num}번</th>`);
+      html+=`<th>기타</th></tr><tr>`;
+      state.candidates.forEach(can=>html+=`<td>${cls.votes[can.num]||0}</td>`);
+      html+=`<td>${abstain}</td></tr></table><div class="classSum">총계: ${cls.total}</div></div>`;
+    }
+    html+=`</div>`;
+  }
+  document.getElementById("resultOutput").innerHTML=html;
+}
+function changePassword(){
+  const v=document.getElementById("newPassword").value.trim();
+  if(!v){alert("새 비밀번호를 입력하세요."); return;}
+  state.password=v; document.getElementById("newPassword").value=""; save(); alert("비밀번호가 변경되었습니다.");
+}
+function factoryReset(){
+  if(confirm("전체 테스트 데이터를 초기화할까요?")){
+    localStorage.removeItem("schoolVoteIndexV2");
+    state=structuredClone(defaultState);
+    save();
+    show("monitor");
+  }
+}
+function downloadHTML(){
+  const blob=new Blob([document.documentElement.outerHTML],{type:"text/html;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="schoolvote-test-index.html";
+  a.click();
+}
+render();
+</script>
+</body>
+</html>
