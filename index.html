@@ -109,7 +109,7 @@ table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,
       <div class="className" style="font-size:30px" id="loginTarget">관리자 설정</div>
     </div>
     <label>비밀번호</label>
-    <input id="passwordInput" type="password" placeholder="초기 비밀번호: 0000" onkeydown="if(event.key==='Enter') login()"/>
+    <input id="passwordInput" type="password" placeholder=비밀번호를 입력하세요" onkeydown="if(event.key==='Enter') login()"/>
     <button style="width:100%;margin-top:14px" onclick="login()">관리자 로그인</button>
   </div>
 </section>
@@ -207,8 +207,8 @@ import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, quer
 
 const ELECTION_ID="mainElection";
 const DEFAULT_SETTINGS={
-  password:"0000",schoolName:"○○고등학교",electionName:"47대 학생회장 선거",gradeCount:3,classCount:10,
-  candidates:[{num:1,name:"후보1"},{num:2,name:"후보2"},{num:3,name:"후보3"}],
+  password:"0000",schoolName:"대덕고등학교",electionName:"47대 학생회장 선거",gradeCount:3,classCount:10,
+  candidates:[{num:1,name:"윤금채, 김세현, 이자연"},{num:2,name:"위서준, 정지범, 강지수"},{num:3,name:"장인영, 장채윤, 이서준"}],
   classes:{}
 };
 const DEFAULT_STATIONS={
