@@ -326,7 +326,7 @@ th{font-weight:1000;background:#f8fafc}
   padding:20px;
 }
 .confirmBox{
-  width:min(520px,100%);
+  width:min(420px,100%);
   background:white;
   border-radius:30px;
   border:1px solid var(--line);
@@ -335,8 +335,8 @@ th{font-weight:1000;background:#f8fafc}
   text-align:center;
 }
 .confirmLabel{font-size:14px;color:var(--muted);font-weight:1000}
-.confirmNum{font-size:32px;color:var(--blue);font-weight:1000;margin-top:10px}
-.confirmName{font-size:48px;font-weight:1000;letter-spacing:-.06em;margin-top:4px}
+.confirmNum{font-size:22px;color:var(--blue);font-weight:1000;margin-top:10px}
+.confirmName{font-size:32px;font-weight:1000;letter-spacing:-.06em;margin-top:4px}
 .confirmActions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
 @media(max-width:700px){
   .bigVoteCard{padding:16px}
