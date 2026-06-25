@@ -178,6 +178,12 @@ window.markDirty=function(){
   dirty=true;
   document.getElementById("unsaved")?.classList.remove("hidden");
 };
+window.updateCandidate=function(index, field, value){
+  if(!settings.candidates[index]) return;
+  if(field==="num") settings.candidates[index].num=Number(value);
+  else settings.candidates[index].name=value;
+  markDirty();
+};
 window.structureChanged=function(){
   settings.gradeCount=Number(document.getElementById("gradeCount").value);
   settings.classCount=Number(document.getElementById("classCount").value);
@@ -185,6 +191,12 @@ window.structureChanged=function(){
   ensureStations(settings, stations);
   markDirty();
   renderTotals();
+};
+window.updateClassTotal=function(key, value){
+  const [g,c]=key.split("-").map(Number);
+  if(!settings.classes[key]) settings.classes[key]={grade:g,classNo:c,total:0};
+  settings.classes[key].total=Number(value)||0;
+  markDirty();
 };
 
 async function init(){
@@ -247,7 +259,7 @@ function renderSettings(){
   if(wrap){
     wrap.innerHTML="";
     settings.candidates.forEach((c,i)=>{
-      wrap.innerHTML+=`<div class="row"><input type="number" value="${escapeHtml(c.num)}" oninput="settings.candidates[${i}].num=Number(this.value);markDirty();"><input value="${escapeHtml(c.name)}" oninput="settings.candidates[${i}].name=this.value;markDirty();"><button class="ghost" onclick="removeCandidate(${i})">삭제</button></div>`;
+      wrap.innerHTML+=`<div class="row"><input type="number" value="${escapeHtml(c.num)}" oninput="updateCandidate(${i}, 'num', this.value)"><input value="${escapeHtml(c.name)}" oninput="updateCandidate(${i}, 'name', this.value)"><button class="ghost" onclick="removeCandidate(${i})">삭제</button></div>`;
     });
   }
 }
@@ -260,7 +272,7 @@ function renderTotals(){
     let items="";
     for(let c=1;c<=cc;c++){
       const key=`${g}-${c}`;
-      items+=`<div class="totalItem"><b>${key}</b><input type="number" min="0" value="${settings.classes[key]?.total??28}" onchange="settings.classes['${key}'].total=Number(this.value)||0;markDirty();" onkeydown="if(event.key==='Enter') saveSettings()"></div>`;
+      items+=`<div class="totalItem"><b>${key}</b><input type="number" min="0" value="${settings.classes[key]?.total??28}" onchange="updateClassTotal('${key}', this.value)" oninput="markDirty()" onkeydown="if(event.key==='Enter') saveSettings()"></div>`;
     }
     wrap.innerHTML+=`<h3>${g}학년</h3><div class="totalGrid">${items}</div>`;
   }

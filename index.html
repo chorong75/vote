@@ -18,42 +18,61 @@
     </div>
   </div>
 </header>
-<main>
+<main class="votePageMain">
   <div id="msg" class="msg"></div>
-  <section class="grid">
-    <div class="card">
-      <h2>태블릿 투표소 선택</h2>
-      <label>현재 태블릿이 놓인 투표소</label>
-      <select id="stationSelect"></select>
-      <div class="notice" style="margin-top:14px">
-        이 화면은 학생 투표 전용입니다. 관리자 설정은 별도 admin.html에서 진행합니다.
+  <section class="voteOnlyGrid">
+    <div class="card tabletSetupCard">
+      <div class="row">
+        <div>
+          <h2>태블릿 투표소 선택</h2>
+          <p class="muted">투표 시작 전, 이 태블릿이 놓인 투표소만 선택해 두세요.</p>
+        </div>
+        <div>
+          <label>현재 태블릿 투표소</label>
+          <select id="stationSelect"></select>
+        </div>
       </div>
     </div>
-    <div class="card">
+
+    <div class="card bigVoteCard">
       <div id="votePanel">
-        <div class="voteHeader">
-          <div class="title" id="electionTitle">학생회장 선거</div>
-          <div class="station" id="stationName">제1투표소</div>
-          <div class="muted" id="classText">투표 대기 중</div>
-          <div class="pill wait" id="countText" style="margin-top:10px">대기 중</div>
+        <div class="boothHeader">
+          <div class="boothTitle" id="electionTitle">학생회장 선거</div>
+          <div class="boothStation" id="stationName">제1투표소</div>
+          <div class="boothClassLabel">현재 투표 학급</div>
+          <div class="boothClass wait" id="classText">투표 대기 중</div>
+          <div class="pill wait boothCount" id="countText">대기 중</div>
         </div>
-        <h2 style="margin-top:18px">후보를 선택하세요</h2>
-        <div class="candidateList" id="candidateList"></div>
-        <button id="voteButton" class="voteButton" disabled>투표하기</button>
+
+        <div class="bigCandidateList" id="candidateList"></div>
+        <button id="voteButton" class="bigVoteButton" disabled>투표하기</button>
       </div>
-      <div id="completePanel" class="complete hidden">
+
+      <div id="completePanel" class="bigComplete hidden">
         <div class="check">✓</div>
         <h2>투표가 완료되었습니다</h2>
-        <p class="muted">표가 정상적으로 저장되었습니다. 잠시 후 다음 학생 투표 화면으로 돌아갑니다.</p>
+        <p class="muted">감사합니다. 다음 학생에게 태블릿을 넘겨주세요.</p>
       </div>
     </div>
   </section>
+
+  <div id="confirmOverlay" class="confirmOverlay hidden">
+    <div class="confirmBox">
+      <div class="confirmLabel">선택한 후보가 맞습니까?</div>
+      <div class="confirmNum" id="confirmNum">기호 1번</div>
+      <div class="confirmName" id="confirmName">후보명</div>
+      <div class="confirmActions">
+        <button class="ghost" id="confirmCancel">취소</button>
+        <button id="confirmOk">투표하기</button>
+      </div>
+    </div>
+  </div>
 </main>
 
 <script type="module">
 import {
   createFirebase, refs, DEFAULT_SETTINGS, DEFAULT_STATIONS, ensureClasses, ensureStations,
-  getDoc, setDoc, onSnapshot, addDoc, collection, serverTimestamp, withTimeout, escapeHtml
+  getDoc, setDoc, onSnapshot, addDoc, serverTimestamp, withTimeout, escapeHtml
 } from "./firebase.js";
 
 let settings = structuredClone(DEFAULT_SETTINGS);
@@ -62,13 +81,14 @@ let votes = [];
 let selectedCandidate = null;
 let stationKey = localStorage.getItem("schoolVoteV2Station") || "grade1";
 let db = null;
+let saving = false;
 
 const msgEl = document.getElementById("msg");
 function msg(text,type="ok"){
   msgEl.textContent=text;
   msgEl.className=`msg show ${type}`;
   clearTimeout(window.__msg);
-  window.__msg=setTimeout(()=>msgEl.className="msg",3500);
+  window.__msg=setTimeout(()=>msgEl.className="msg",2600);
 }
 function countVotes(classKey,candidateNum=null){
   return votes.filter(v=>v.classKey===classKey && (candidateNum==null || Number(v.candidateNum)===Number(candidateNum))).length;
@@ -129,9 +149,7 @@ function render(){
   for(let g=1; g<=Number(settings.gradeCount||3); g++){
     const key=`grade${g}`;
     const st=stations[key];
-    if(st){
-      stationSelect.innerHTML+=`<option value="${key}">${escapeHtml(st.name)} (${g}학년)</option>`;
-    }
+    if(st) stationSelect.innerHTML+=`<option value="${key}">${escapeHtml(st.name)} (${g}학년)</option>`;
   }
   if(!stations[stationKey]) stationKey="grade1";
   stationSelect.value=stationKey;
@@ -139,23 +157,27 @@ function render(){
   const st=stations[stationKey] || stations.grade1;
   if(!st) return;
   document.getElementById("stationName").textContent=st.name;
-  document.getElementById("classText").textContent=st.isOpen ? `현재 투표 학급: ${st.currentClass}` : "현재 투표 대기 중";
+
+  const classEl=document.getElementById("classText");
+  classEl.textContent=st.isOpen ? st.currentClass : "투표 대기 중";
+  classEl.className="boothClass" + (st.isOpen ? "" : " wait");
 
   const total=classTotal(st.currentClass);
   const voted=countVotes(st.currentClass);
   const countEl=document.getElementById("countText");
-  countEl.className="pill " + (st.isOpen ? "live" : "wait");
-  countEl.textContent=st.isOpen ? `현재 투표수 ${voted} / ${total}명` : "투표 대기 중";
+  countEl.className="pill boothCount " + (st.isOpen ? "live" : "wait");
+  countEl.textContent=st.isOpen ? `현재 투표수 ${voted} / ${total}명` : "대기 중";
 
   const list=document.getElementById("candidateList");
   list.innerHTML="";
   settings.candidates.forEach(c=>{
     const isSelected=Number(selectedCandidate)===Number(c.num);
     const div=document.createElement("div");
-    div.className="candidate" + (isSelected ? " selected" : "");
-    div.innerHTML=`<div><div class="num">기호 ${escapeHtml(c.num)}번</div><div class="name">${escapeHtml(c.name)}</div></div><div style="font-size:32px">${isSelected?"●":"○"}</div>`;
+    div.className="bigCandidate" + (isSelected ? " selected" : "") + (!st.isOpen ? " disabled" : "");
+    div.innerHTML=`<div class="numBig">기호<br>${escapeHtml(c.num)}번</div><div class="nameBig">${escapeHtml(c.name)}</div><div class="secretMark">✓</div>`;
     div.onclick=()=>{
       if(!st.isOpen){ msg("현재 투표 대기 중입니다.","err"); return; }
+      if(saving) return;
       selectedCandidate=c.num;
       render();
     };
@@ -164,8 +186,8 @@ function render(){
 
   const full = total > 0 && voted >= total;
   const btn=document.getElementById("voteButton");
-  btn.disabled=!(db && st.isOpen && selectedCandidate && !full);
-  btn.textContent=full ? "재적 인원 도달" : "투표하기";
+  btn.disabled=!(db && st.isOpen && selectedCandidate && !full && !saving);
+  btn.textContent=saving ? "저장 중..." : (full ? "재적 인원 도달" : "투표하기");
 }
 
 document.getElementById("stationSelect").addEventListener("change",(e)=>{
@@ -175,7 +197,23 @@ document.getElementById("stationSelect").addEventListener("change",(e)=>{
   render();
 });
 
-document.getElementById("voteButton").addEventListener("click", async ()=>{
+function openConfirm(){
+  const cand=settings.candidates.find(c=>Number(c.num)===Number(selectedCandidate));
+  if(!cand) return;
+  document.getElementById("confirmNum").textContent=`기호 ${cand.num}번`;
+  document.getElementById("confirmName").textContent=cand.name;
+  document.getElementById("confirmOverlay").classList.remove("hidden");
+}
+function closeConfirm(){
+  document.getElementById("confirmOverlay").classList.add("hidden");
+}
+document.getElementById("confirmCancel").addEventListener("click", closeConfirm);
+document.getElementById("confirmOk").addEventListener("click", async ()=>{
+  closeConfirm();
+  await saveVote();
+});
+
+document.getElementById("voteButton").addEventListener("click", ()=>{
   if(!db){ msg("Firebase 설정이 필요합니다.","err"); return; }
   const st=stations[stationKey];
   if(!st || !st.isOpen){ msg("현재 투표 대기 중입니다.","err"); return; }
@@ -183,15 +221,17 @@ document.getElementById("voteButton").addEventListener("click", async ()=>{
   const total=classTotal(st.currentClass);
   const voted=countVotes(st.currentClass);
   if(total > 0 && voted >= total){ msg("해당 학급 재적 인원에 도달했습니다.","err"); return; }
+  openConfirm();
+});
 
-  const cand=settings.candidates.find(c=>Number(c.num)===Number(selectedCandidate));
-  if(!confirm(`기호 ${selectedCandidate}번${cand?` (${cand.name})`:""}에게 투표할까요?\n투표 후에는 취소할 수 없습니다.`)) return;
-
+async function saveVote(){
+  if(saving) return;
+  const st=stations[stationKey];
+  if(!st || !st.isOpen) return msg("현재 투표 대기 중입니다.","err");
   const candidateNum=Number(selectedCandidate);
   selectedCandidate=null;
-  const btn=document.getElementById("voteButton");
-  btn.disabled=true;
-  btn.textContent="저장 중...";
+  saving=true;
+  render();
 
   try{
     const r=refs(db);
@@ -202,23 +242,24 @@ document.getElementById("voteButton").addEventListener("click", async ()=>{
       candidateNum,
       createdAt:serverTimestamp()
     }),10000,"투표 저장");
+
     document.getElementById("votePanel").classList.add("hidden");
     document.getElementById("completePanel").classList.remove("hidden");
     msg("투표가 정상적으로 저장되었습니다.");
     setTimeout(()=>{
       document.getElementById("completePanel").classList.add("hidden");
       document.getElementById("votePanel").classList.remove("hidden");
-      btn.textContent="투표하기";
+      saving=false;
       render();
-    },2200);
+    },1300);
   }catch(err){
     console.error(err);
     alert(err.message || "투표 저장 실패");
     msg(err.message || "투표 저장 실패","err");
-    btn.textContent="투표하기";
+    saving=false;
     render();
   }
-});
+}
 
 init().catch(err=>{
   console.error(err);

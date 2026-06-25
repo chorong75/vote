@@ -230,3 +230,120 @@ th{font-weight:1000;background:#f8fafc}
   .card{box-shadow:none;border:0;padding:0}.screen{display:block!important}
   th,td{font-size:12px;padding:6px}.resultTitle{font-size:28px}.classReportGrid{grid-template-columns:repeat(4,1fr)}
 }
+
+
+/* v2.1 student voting booth UI */
+.votePageMain{max-width:980px}
+.voteOnlyGrid{display:grid;grid-template-columns:1fr;gap:18px}
+.tabletSetupCard{padding:16px 18px}
+.tabletSetupCard h2{font-size:18px;margin-bottom:8px}
+.bigVoteCard{padding:26px}
+.boothHeader{
+  text-align:center;
+  background:linear-gradient(180deg,#f8fbff,#eef6ff);
+  border:1px solid var(--line);
+  border-radius:26px;
+  padding:22px 18px;
+}
+.boothTitle{font-size:30px;font-weight:1000;letter-spacing:-.05em;color:var(--navy)}
+.boothStation{font-size:20px;font-weight:1000;color:var(--blue);margin-top:8px}
+.boothClassLabel{font-size:14px;font-weight:1000;color:var(--muted);margin-top:16px}
+.boothClass{
+  font-size:64px;
+  line-height:1;
+  font-weight:1000;
+  color:var(--navy);
+  letter-spacing:-.08em;
+  margin-top:4px;
+}
+.boothClass.wait{font-size:42px;color:var(--muted);letter-spacing:-.05em}
+.boothCount{margin-top:14px}
+.bigCandidateList{display:grid;gap:16px;margin-top:22px}
+.bigCandidate{
+  position:relative;
+  border:2px solid var(--line);
+  border-radius:28px;
+  min-height:118px;
+  padding:22px 58px 22px 24px;
+  display:grid;
+  grid-template-columns:88px 1fr;
+  align-items:center;
+  background:white;
+  cursor:pointer;
+  transition:transform .08s ease, border-color .08s ease, box-shadow .08s ease;
+}
+.bigCandidate:active{transform:scale(.995)}
+.bigCandidate .numBig{
+  font-size:26px;
+  font-weight:1000;
+  color:var(--blue);
+  text-align:center;
+}
+.bigCandidate .nameBig{
+  font-size:42px;
+  font-weight:1000;
+  letter-spacing:-.06em;
+  color:var(--text);
+  line-height:1.12;
+}
+.secretMark{
+  position:absolute;
+  right:22px;
+  bottom:18px;
+  font-size:17px;
+  opacity:0;
+  color:var(--blue);
+  font-weight:1000;
+}
+.bigCandidate.selected{
+  border-color:#b9cff8;
+  box-shadow:0 8px 22px rgba(37,99,235,.08);
+}
+.bigCandidate.selected .secretMark{opacity:1}
+.bigCandidate.disabled{opacity:.55;cursor:not-allowed}
+.bigVoteButton{
+  width:100%;
+  margin-top:22px;
+  padding:26px;
+  font-size:32px;
+  border-radius:28px;
+}
+.bigComplete{
+  text-align:center;
+  padding:90px 20px;
+}
+.bigComplete .check{font-size:108px;color:var(--green);font-weight:1000;line-height:1}
+.bigComplete h2{font-size:42px}
+.bigComplete p{font-size:20px}
+.confirmOverlay{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  background:rgba(15,23,42,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.confirmBox{
+  width:min(520px,100%);
+  background:white;
+  border-radius:30px;
+  border:1px solid var(--line);
+  box-shadow:0 30px 80px rgba(15,23,42,.2);
+  padding:28px;
+  text-align:center;
+}
+.confirmLabel{font-size:14px;color:var(--muted);font-weight:1000}
+.confirmNum{font-size:32px;color:var(--blue);font-weight:1000;margin-top:10px}
+.confirmName{font-size:48px;font-weight:1000;letter-spacing:-.06em;margin-top:4px}
+.confirmActions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
+@media(max-width:700px){
+  .bigVoteCard{padding:16px}
+  .boothTitle{font-size:24px}
+  .boothClass{font-size:52px}
+  .bigCandidate{grid-template-columns:64px 1fr;min-height:104px;padding:18px 50px 18px 16px}
+  .bigCandidate .numBig{font-size:22px}
+  .bigCandidate .nameBig{font-size:34px}
+  .bigVoteButton{font-size:26px;padding:22px}
+}
