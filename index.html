@@ -149,14 +149,14 @@ function render(){
   for(let g=1; g<=Number(settings.gradeCount||3); g++){
     const key=`grade${g}`;
     const st=stations[key];
-    if(st) stationSelect.innerHTML+=`<option value="${key}">${escapeHtml(st.name)} (${g}학년)</option>`;
+    if(st) stationSelect.innerHTML+=`<option value="${key}">${escapeHtml(st.color||"")} ${escapeHtml(st.name)} (${g}학년)</option>`;
   }
   if(!stations[stationKey]) stationKey="grade1";
   stationSelect.value=stationKey;
 
   const st=stations[stationKey] || stations.grade1;
   if(!st) return;
-  document.getElementById("stationName").textContent=st.name;
+  document.getElementById("stationName").textContent=`${st.color||""} ${st.name}`.trim();
 
   const classEl=document.getElementById("classText");
   classEl.textContent=st.isOpen ? st.currentClass : "투표 대기 중";

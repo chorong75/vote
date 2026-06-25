@@ -27,9 +27,9 @@ export const DEFAULT_SETTINGS = {
 };
 
 export const DEFAULT_STATIONS = {
-  grade1:{name:"제 1투표소",grade:1,currentClass:"1-1",isOpen:false},
-  grade2:{name:"제 2투표소",grade:2,currentClass:"2-1",isOpen:false},
-  grade3:{name:"제 3투표소",grade:3,currentClass:"3-1",isOpen:false}
+  grade1:{name:"제 1투표소",color:"🔵",grade:1,currentClass:"1-1",isOpen:false},
+  grade2:{name:"제 2투표소",color:"🟢",grade:2,currentClass:"2-1",isOpen:false},
+  grade3:{name:"제 3투표소",color:"🟠",grade:3,currentClass:"3-1",isOpen:false}
 };
 
 export function parseFirebaseInput(raw){
@@ -83,7 +83,8 @@ export function ensureStations(settings, stations){
   const gc=Number(settings.gradeCount)||3;
   for(let g=1; g<=gc; g++){
     const key=`grade${g}`;
-    if(!stations[key]) stations[key]={name:`제${g}투표소`,grade:g,currentClass:`${g}-1`,isOpen:false};
+    if(!stations[key]) stations[key]={name:`제${g}투표소`,color:["🔵","🟢","🟠","🟣","🔴","⚪"][g-1]||"🔵",grade:g,currentClass:`${g}-1`,isOpen:false};
+    if(!stations[key].color) stations[key].color=["🔵","🟢","🟠","🟣","🔴","⚪"][g-1]||"🔵";
   }
 }
 
