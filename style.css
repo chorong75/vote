@@ -326,7 +326,7 @@ th{font-weight:1000;background:#f8fafc}
   padding:20px;
 }
 .confirmBox{
-  width:min(320px,100%);
+  width:min(420px,100%);
   background:white;
   border-radius:30px;
   border:1px solid var(--line);
@@ -335,8 +335,8 @@ th{font-weight:1000;background:#f8fafc}
   text-align:center;
 }
 .confirmLabel{font-size:14px;color:var(--muted);font-weight:1000}
-.confirmNum{font-size:16px;color:var(--blue);font-weight:1000;margin-top:10px}
-.confirmName{font-size:14px;font-weight:1000;letter-spacing:-.06em;margin-top:4px}
+.confirmNum{font-size:22px;color:var(--blue);font-weight:1000;margin-top:10px}
+.confirmName{font-size:32px;font-weight:1000;letter-spacing:-.06em;margin-top:4px}
 .confirmActions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
 @media(max-width:700px){
   .bigVoteCard{padding:16px}
@@ -346,4 +346,174 @@ th{font-weight:1000;background:#f8fafc}
   .bigCandidate .numBig{font-size:22px}
   .bigCandidate .nameBig{font-size:34px}
   .bigVoteButton{font-size:26px;padding:22px}
+}
+
+
+/* v2.3 result table cleanup */
+:root{
+  --result-line:#334155;
+  --result-soft:#f8fafc;
+  --result-text:#0f172a;
+}
+
+#resultOutput{
+  color:var(--result-text);
+}
+
+.resultTitle{
+  font-size:28px;
+  font-weight:700;
+  letter-spacing:-.03em;
+  margin:28px 0 18px;
+  color:var(--result-text);
+}
+
+/* 상단 개표 결과표 */
+#resultOutput > table{
+  border-collapse:collapse;
+  border:1px solid var(--result-line);
+  table-layout:fixed;
+  margin:10px 0 26px;
+  width:100%;
+}
+
+#resultOutput > table th,
+#resultOutput > table td{
+  border:1px solid var(--result-line);
+  padding:10px 8px;
+  text-align:center;
+  vertical-align:middle;
+  font-size:14px;
+  line-height:1.35;
+  color:var(--result-text);
+}
+
+#resultOutput > table th{
+  background:var(--result-soft);
+  font-weight:700;
+}
+
+#resultOutput > table td{
+  font-weight:500;
+}
+
+/* 반별 집계표 */
+.classReportGrid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  border-top:1px solid var(--result-line);
+  border-left:1px solid var(--result-line);
+  border-right:0;
+  border-bottom:0;
+  margin-bottom:34px;
+}
+
+.classBox{
+  border-right:1px solid var(--result-line);
+  border-bottom:1px solid var(--result-line);
+  min-height:104px;
+  background:white;
+}
+
+.classTitle{
+  padding:8px 6px;
+  border-bottom:1px solid var(--result-line);
+  background:var(--result-soft);
+  text-align:center;
+  font-size:16px;
+  font-weight:700;
+  line-height:1.2;
+  color:var(--result-text);
+}
+
+.miniTable{
+  width:100%;
+  margin:0;
+  border:0;
+  border-collapse:collapse;
+  table-layout:fixed;
+}
+
+.miniTable th,
+.miniTable td{
+  border:0;
+  border-right:1px solid var(--result-line);
+  border-bottom:1px solid var(--result-line);
+  padding:7px 4px;
+  text-align:center;
+  vertical-align:middle;
+  font-size:12px;
+  line-height:1.25;
+  color:var(--result-text);
+}
+
+.miniTable th{
+  background:#ffffff;
+  font-weight:700;
+}
+
+.miniTable td{
+  font-weight:500;
+}
+
+.miniTable th:last-child,
+.miniTable td:last-child{
+  border-right:0;
+}
+
+.classSum{
+  padding:8px 10px;
+  font-size:12px;
+  font-weight:600;
+  line-height:1.35;
+  color:var(--result-text);
+  background:white;
+}
+
+/* 인쇄 시에도 굵기와 선 통일 */
+@media print{
+  .resultTitle{
+    font-size:24px;
+    font-weight:700;
+    margin:20px 0 12px;
+  }
+
+  #resultOutput > table th,
+  #resultOutput > table td{
+    font-size:11px;
+    padding:5px 4px;
+  }
+
+  .classReportGrid{
+    grid-template-columns:repeat(4,1fr);
+    page-break-inside:avoid;
+  }
+
+  .classTitle{
+    font-size:13px;
+    padding:5px 4px;
+  }
+
+  .miniTable th,
+  .miniTable td{
+    font-size:10px;
+    padding:4px 2px;
+  }
+
+  .classSum{
+    font-size:10px;
+    padding:5px 6px;
+  }
+}
+
+@media(max-width:900px){
+  .classReportGrid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:560px){
+  .classReportGrid{
+    grid-template-columns:1fr;
+  }
 }
