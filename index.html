@@ -9,11 +9,12 @@
 <body>
 <header>
   <div class="top">
-    <div class="brand">
+    <div class="brand" onclick="goHome()" title="투표 첫 화면으로 이동">
       <h1 id="topTitle">학생회장 선거</h1>
       <p>학생 투표 전용 화면 · 태블릿용</p>
     </div>
     <div class="nav">
+      <button onclick="goHome()">홈</button>
       <a href="admin.html">관리자</a>
     </div>
   </div>
@@ -260,6 +261,16 @@ async function saveVote(){
     render();
   }
 }
+
+window.goHome=function(){
+  selectedCandidate=null;
+  saving=false;
+  closeConfirm();
+  document.getElementById("completePanel").classList.add("hidden");
+  document.getElementById("votePanel").classList.remove("hidden");
+  window.scrollTo({top:0,behavior:"smooth"});
+  render();
+};
 
 init().catch(err=>{
   console.error(err);
