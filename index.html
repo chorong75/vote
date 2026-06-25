@@ -13,7 +13,7 @@ header{background:rgba(255,255,255,.9);border-bottom:1px solid var(--line);posit
 .brand h1{margin:0;font-size:23px;letter-spacing:-.04em}.brand p{margin:4px 0 0;font-size:13px;color:var(--muted)}
 .nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.nav button{border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:999px;padding:10px 13px;font-weight:900;cursor:pointer}.nav button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 main{max-width:1240px;margin:24px auto 70px;padding:0 20px}.card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:var(--shadow)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.monitorSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.monitorSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.adminMenuGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}.adminMenuGrid button{padding:18px;font-size:18px;border-radius:18px}
 h2{margin:0 0 14px;font-size:22px;letter-spacing:-.04em}h3{margin:18px 0 10px;font-size:16px}.muted{color:var(--muted);font-size:13px;line-height:1.55}
 button{border:0;border-radius:14px;padding:12px 15px;background:var(--blue);color:#fff;font-weight:1000;cursor:pointer;font-size:15px}button.secondary{background:var(--soft);color:var(--navy);border:1px solid var(--line)}button.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}button.green{background:var(--green)}button.red{background:var(--red)}button:disabled{opacity:.45;cursor:not-allowed}
 input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:13px;font-size:15px;background:#fff}textarea{min-height:120px;font-family:monospace}label{display:block;font-weight:900;font-size:13px;margin:12px 0 6px}
@@ -25,24 +25,20 @@ input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);
 .complete{text-align:center;padding:70px 20px}.complete .check{font-size:80px;color:var(--green);font-weight:1000}.loginBox{max-width:500px;margin:50px auto}.selectedMenuBox{margin:14px 0;padding:16px;border-radius:18px;background:var(--soft);border:1px solid var(--line);text-align:center}.selectedMenuLabel{color:var(--muted);font-size:13px;font-weight:900}.selectedMenuTitle{color:var(--navy);font-size:26px;font-weight:1000;letter-spacing:-.04em}
 .notice{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:16px;padding:13px 15px;font-size:13px;font-weight:800;line-height:1.5}
 table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,td{border:1px solid #111;padding:9px;text-align:center;font-size:15px}th{font-weight:1000;background:#f8fafc}.resultTitle{text-align:center;font-size:34px;font-weight:1000;letter-spacing:.08em;margin:8px 0 24px}.classReportGrid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #111;border-bottom:0;border-right:0}.classBox{border-right:1px solid #111;border-bottom:1px solid #111;min-height:118px}.classTitle{text-align:center;font-weight:1000;border-bottom:1px solid #111;padding:5px;background:#f8fafc}.miniTable{width:100%;margin:0;border:0}.miniTable th,.miniTable td{border:1px solid #111;border-top:0;padding:5px;font-size:12px}.classSum{padding:7px;font-weight:1000;font-size:12px}
-@media(max-width:900px){.grid,.grid3,.monitorSummary{grid-template-columns:1fr}.classReportGrid{grid-template-columns:repeat(2,1fr)}.top{align-items:flex-start;flex-direction:column}.candidate .name{font-size:25px}.voteHeader .station{font-size:34px}}
+@media(max-width:900px){.grid,.grid3,.monitorSummary,.adminMenuGrid{grid-template-columns:1fr}.classReportGrid{grid-template-columns:repeat(2,1fr)}.top{align-items:flex-start;flex-direction:column}.candidate .name{font-size:25px}.voteHeader .station{font-size:34px}}
 @media(max-width:560px){main{padding:0 12px}.card{padding:16px}.classButtons{grid-template-columns:repeat(3,1fr)}.classReportGrid{grid-template-columns:1fr}.nav button{font-size:13px;padding:9px 10px}}
 @media print{header,.noPrint,button{display:none!important}body{background:#fff}main{max-width:none;margin:0;padding:0}.card{box-shadow:none;border:0;padding:0}.screen{display:none!important}#resultScreen{display:block!important}th,td{font-size:12px;padding:6px}.resultTitle{font-size:28px}.classReportGrid{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 <body>
-<header><div class="top"><div class="brand"><h1>SchoolVote Firebase</h1><p>여러 태블릿 동시 투표 · Firebase 실시간 연동 · Word/Excel 저장</p></div><div class="nav">
-<button class="navBtn active" data-screen="monitor" onclick="go('monitor')">실시간 현황</button>
-<button class="navBtn" data-screen="vote" onclick="go('vote')">학생 투표</button>
-<button class="navBtn" data-screen="setup" onclick="goAdmin('setup')">선거 설정</button>
-<button class="navBtn" data-screen="manage" onclick="goAdmin('manage')">투표 진행</button>
-<button class="navBtn" data-screen="result" onclick="goAdmin('result')">개표 결과</button>
+<header><div class="top"><div class="brand" onclick="go('vote')" title="메인화면으로 이동" style="cursor:pointer"><h1>학생회장 선거</h1><p>SchoolVote · 여러 태블릿 동시 투표 · Firebase 실시간 연동</p></div><div class="nav">
+<button class="navBtn" data-screen="monitor" onclick="go('monitor')">실시간 현황</button>
 <button class="navBtn" data-screen="admin" onclick="goAdmin('admin')">관리자 설정</button>
 </div></div></header>
 <main>
-<section id="monitorScreen" class="screen"><div class="card"><div class="row"><div><h2>실시간 현황</h2><p class="muted">공개 화면입니다. 후보별 득표수는 개표 결과 메뉴에서 확인합니다.</p></div><div class="pill wait" id="overallState">Firebase 연결 대기</div></div><div class="monitorSummary" id="monitorCards"></div></div></section>
+<section id="monitorScreen" class="screen hidden"><div class="card"><div class="row"><div><h2>실시간 현황</h2><p class="muted">공개 화면입니다. 후보별 득표수는 개표 결과 메뉴에서 확인합니다.</p></div><div class="pill wait" id="overallState">Firebase 연결 대기</div></div><div class="monitorSummary" id="monitorCards"></div></div></section>
 
-<section id="voteScreen" class="screen hidden"><div class="grid"><div class="card"><h2>학생 투표 화면</h2><label>태블릿 투표소</label><select id="voteStationSelect" onchange="local.tabletStation=this.value; saveLocal(); render()"></select><div class="notice" style="margin-top:14px">학생은 이름·번호·학번을 입력하지 않습니다. 현재 투표소에 배정된 학급으로만 표가 누적됩니다.</div></div><div class="card"><div id="votePanel"><div class="voteHeader"><div class="title" id="voteElectionTitle">학생회 선거</div><div class="station" id="voteStationTitle">제1투표소</div><div class="muted" id="voteClassText">투표 대기 중</div></div><h2 style="margin-top:18px">후보를 선택하세요</h2><div class="candidateList" id="candidateList"></div><button class="voteButton" id="voteButton" onclick="castVote()" disabled>투표하기</button></div><div id="completePanel" class="complete hidden"><div class="check">✓</div><h2>투표가 완료되었습니다</h2><p class="muted">잠시 후 다음 학생 투표 화면으로 돌아갑니다.</p></div></div></div></section>
+<section id="voteScreen" class="screen"><div class="grid"><div class="card"><h2>학생 투표 화면</h2><label>태블릿 투표소</label><select id="voteStationSelect" onchange="local.tabletStation=this.value; saveLocal(); render()"></select><div class="notice" style="margin-top:14px">학생은 이름·번호·학번을 입력하지 않습니다. 현재 투표소에 배정된 학급으로만 표가 누적됩니다.</div></div><div class="card"><div id="votePanel"><div class="voteHeader"><div class="title" id="voteElectionTitle">학생회 선거</div><div class="station" id="voteStationTitle">제1투표소</div><div class="muted" id="voteClassText">투표 대기 중</div></div><h2 style="margin-top:18px">후보를 선택하세요</h2><div class="candidateList" id="candidateList"></div><button class="voteButton" id="voteButton" onclick="castVote()" disabled>투표하기</button></div><div id="completePanel" class="complete hidden"><div class="check">✓</div><h2>투표가 완료되었습니다</h2><p class="muted">잠시 후 다음 학생 투표 화면으로 돌아갑니다.</p></div></div></div></section>
 
 <section id="loginScreen" class="screen hidden"><div class="card loginBox"><h2>관리자 비밀번호</h2><div class="selectedMenuBox"><div class="selectedMenuLabel">선택한 메뉴</div><div class="selectedMenuTitle" id="loginTargetTitle">관리자 메뉴</div></div><p class="muted" id="loginTargetDesc"></p><label>비밀번호</label><input id="passwordInput" type="password" placeholder="초기 비밀번호: 0000" onkeydown="if(event.key==='Enter') login()"/><button style="width:100%;margin-top:14px" onclick="login()">관리자 로그인</button></div></section>
 
@@ -52,7 +48,17 @@ table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,
 
 <section id="resultScreen" class="screen hidden protected"><div class="card"><div class="row noPrint" style="margin-bottom:10px"><div><h2>개표 결과</h2><p class="muted">PDF는 인쇄, Word는 .doc, Excel은 .xlsx로 저장합니다.</p></div><button class="secondary" onclick="window.print()">PDF/인쇄</button><button class="ghost" onclick="downloadWord()">Word 저장</button><button class="ghost" onclick="downloadExcel()">Excel 저장</button></div><div id="resultOutput"></div></div></section>
 
-<section id="adminScreen" class="screen hidden protected"><div class="grid"><div class="card"><h2>Firebase 설정</h2><p class="muted">아래에 Firebase 웹앱 설정 JSON을 붙여넣고 저장하세요. 저장 후 새로고침하면 여러 기기 연동이 됩니다.</p><textarea id="firebaseConfigInput" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}'></textarea><button style="width:100%;margin-top:12px" onclick="saveFirebaseConfig()">Firebase 설정 저장 후 새로고침</button><div class="notice" style="margin-top:14px">Firebase 콘솔에서 Firestore Database를 만든 뒤 테스트 모드로 시작하면 바로 실험할 수 있습니다.</div></div><div class="card"><h2>관리자 설정</h2><label>관리자 비밀번호 변경</label><input id="newPassword" type="password" placeholder="새 비밀번호"/><button style="width:100%;margin-top:12px" onclick="changePassword()">비밀번호 변경</button><button class="red" style="width:100%;margin-top:12px" onclick="resetAllVotes()">전체 투표 데이터 초기화</button></div></div></section>
+<section id="adminScreen" class="screen hidden protected">
+<div class="card" style="margin-bottom:18px">
+  <h2>관리자 메뉴</h2>
+  <p class="muted">선거 설정, 투표 진행, 개표 결과는 이 화면에서 이동합니다.</p>
+  <div class="adminMenuGrid">
+    <button onclick="goAdmin('setup')">선거 설정</button>
+    <button onclick="goAdmin('manage')">투표 진행</button>
+    <button onclick="goAdmin('result')">개표 결과</button>
+  </div>
+</div>
+<div class="grid"><div class="card"><h2>Firebase 설정</h2><p class="muted">아래에 Firebase 웹앱 설정 JSON을 붙여넣고 저장하세요. 저장 후 새로고침하면 여러 기기 연동이 됩니다.</p><textarea id="firebaseConfigInput" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}'></textarea><button style="width:100%;margin-top:12px" onclick="saveFirebaseConfig()">Firebase 설정 저장 후 새로고침</button><div class="notice" style="margin-top:14px">Firebase 콘솔에서 Firestore Database를 만든 뒤 테스트 모드로 시작하면 바로 실험할 수 있습니다.</div></div><div class="card"><h2>관리자 설정</h2><label>관리자 비밀번호 변경</label><input id="newPassword" type="password" placeholder="새 비밀번호"/><button style="width:100%;margin-top:12px" onclick="changePassword()">비밀번호 변경</button><button class="red" style="width:100%;margin-top:12px" onclick="resetAllVotes()">전체 투표 데이터 초기화</button></div></div></section>
 </main>
 
 <script type="module">
@@ -67,7 +73,7 @@ const defaultData={
 };
 let data=structuredClone(defaultData);
 let votes=[];
-let local=JSON.parse(localStorage.getItem("schoolVoteLocal")||'{"admin":false,"targetAfterLogin":"manage","activeTarget":"monitor","tabletStation":"grade1","selectedCandidate":null}');
+let local=JSON.parse(localStorage.getItem("schoolVoteLocal")||'{"admin":false,"targetAfterLogin":"manage","activeTarget":"vote","tabletStation":"grade1","selectedCandidate":null}');
 let db=null, unsubData=null, unsubVotes=null;
 const ELECTION_ID="default";
 const menuNames={monitor:"실시간 현황",vote:"학생 투표",setup:"선거 설정",manage:"투표 진행",result:"개표 결과",admin:"관리자 설정"};
@@ -114,7 +120,7 @@ function show(id){
 function setActive(id){ document.querySelectorAll(".navBtn").forEach(b=>b.classList.toggle("active",b.dataset.screen===id)); }
 function renderLoginTarget(){ const t=local.targetAfterLogin||"manage"; const n=menuNames[t]||"관리자 메뉴"; const a=document.getElementById("loginTargetTitle"), b=document.getElementById("loginTargetDesc"); if(a)a.textContent=n; if(b)b.textContent=`${n}에 접근하려면 관리자 비밀번호를 입력하세요.`; }
 window.login=function(){ const v=document.getElementById("passwordInput").value; if(v===data.password){local.admin=true;document.getElementById("passwordInput").value="";saveLocal();show(local.targetAfterLogin||"manage")} else alert("비밀번호가 맞지 않습니다."); }
-window.lockAdmin=function(){ local.admin=false; local.activeTarget="monitor"; saveLocal(); show("monitor"); }
+window.lockAdmin=function(){ local.admin=false; local.activeTarget="vote"; saveLocal(); show("vote"); }
 
 function render(){
   ensureData(); renderMonitor(); renderVote(); renderSetup(); renderManage(); renderResults(); renderLoginTarget(); setActive(local.activeTarget||"monitor");
