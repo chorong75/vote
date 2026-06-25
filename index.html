@@ -47,8 +47,8 @@ table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,
 <header>
   <div class="top">
     <div class="brand" onclick="go('vote')" title="학생 투표 화면으로 이동">
-      <h1 id="topTitle">학생회장 선거</h1>
-      <p>SchoolVote v1.1 · 9대 태블릿 동시 투표 기준</p>
+      <h1 id="topTitle">대덕고등학교 47대 학생회장 선거</h1>
+      <p>SchoolVote v1.1 · 실시간 전자 투표</p>
     </div>
     <div class="nav">
       <button class="navBtn" data-screen="monitor" onclick="go('monitor')">실시간 현황</button>
@@ -65,7 +65,7 @@ table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,
       <h2>학생 투표 화면</h2>
       <label>태블릿 투표소</label>
       <select id="tabletStation" onchange="local.tabletStation=this.value; saveLocal(); renderVote();"></select>
-      <div class="notice" style="margin-top:14px">학생은 이름·번호·학번을 입력하지 않습니다. 태블릿 9대 동시 투표를 기준으로 설계했습니다.</div>
+      <div class="notice" style="margin-top:14px">학생은 이름·번호·학번을 입력하지 않습니다.</div>
     </div>
     <div class="card">
       <div id="votePanel">
@@ -109,7 +109,7 @@ table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,
       <div class="className" style="font-size:30px" id="loginTarget">관리자 설정</div>
     </div>
     <label>비밀번호</label>
-    <input id="passwordInput" type="password" placeholder=비밀번호를_입력하세요" onkeydown="if(event.key==='Enter') login()"/>
+    <input id="passwordInput" type="password" placeholder=비밀번호를_입력하세요 onkeydown="if(event.key==='Enter') login()"/>
     <button style="width:100%;margin-top:14px" onclick="login()">관리자 로그인</button>
   </div>
 </section>
