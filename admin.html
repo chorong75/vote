@@ -10,12 +10,11 @@
 <body>
 <header>
   <div class="top">
-    <div class="brand" onclick="goHome()" title="관리자 첫 화면으로 이동">
+    <div class="brand" onclick="location.href='index.html'">
       <h1 id="topTitle">관리자</h1>
       <p>SchoolVote v2.0 · 관리자 전용</p>
     </div>
     <div class="nav">
-      <button onclick="goHome()">홈</button>
       <a href="index.html">학생 화면</a>
       <button onclick="lockAdmin()">관리자 잠금</button>
     </div>
@@ -158,17 +157,6 @@ function showAdmin(){
 window.showTab=function(tab){
   ["setup","manage","result"].forEach(t=>document.getElementById(t+"Tab").classList.toggle("hidden",t!==tab));
   render();
-};
-
-window.goHome=function(){
-  if(sessionStorage.getItem("schoolVoteV2Admin")==="true"){
-    showAdmin();
-    showTab("setup");
-  }else{
-    document.getElementById("adminScreen").classList.add("hidden");
-    document.getElementById("loginScreen").classList.remove("hidden");
-  }
-  window.scrollTo({top:0,behavior:"smooth"});
 };
 
 window.saveFirebase=function(){
