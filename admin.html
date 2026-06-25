@@ -90,7 +90,7 @@
   <section id="manageTab" class="hidden">
     <div class="card">
       <h2>투표 진행</h2>
-      <p class="muted">반 직접 선택 → 투표 시작 → 투표 종료 순서로 운영합니다. 투표 진행 중에는 다른 반 선택이 잠깁니다.</p>
+      <p class="muted">원하는 반 선택 → 투표 시작 → 투표 종료 순서로 운영합니다. 투표 종료 후에는 아래 반 버튼에서 원하는 반을 자유롭게 다시 선택할 수 있습니다.</p>
       <div id="stationManage" class="grid3"></div>
     </div>
   </section>
@@ -372,7 +372,7 @@ function renderManage(){
       const click=disabled ? "" : `onclick="selectClass('${key}','${classKey}')"`;
       return `<button class="${cls}" ${disabled} ${click}>${icon}<br><b>${classKey}</b><br><small>${v}/${t}</small></button>`;
     }).join("");
-    wrap.innerHTML+=`<div class="stationCard"><div class="stationTop"><div class="stationName">${escapeHtml(st.name)} <span class="muted">(${g}학년)</span></div><div class="pill ${st.isOpen?'live':'stop'}">${st.isOpen?'진행 중':'대기'}</div></div><div class="selectedBanner ${st.isOpen?'live':''}"><div class="label">현재 선택된 반</div><div class="className">${st.currentClass}</div><div class="count">${voted} / ${total}명 · ${st.isOpen?'투표 진행 중':'대기 중'}</div><div class="bar"><div style="width:${pct}%"></div></div></div><div class="row"><button class="green" ${st.isOpen?'disabled':''} onclick="startStation('${key}')">▶ ${st.currentClass} 투표 시작</button><button class="red" ${st.isOpen?'':'disabled'} onclick="stopStation('${key}')">■ ${st.currentClass} 투표 종료</button></div><h3>투표할 반 선택</h3><div class="legend"><span>🔵 현재 선택</span><span>🟢 완료</span><span>🟠 일부 투표</span><span>⚪ 미진행</span></div><div class="classButtons">${btns}</div><button class="ghost" style="width:100%;margin-top:10px" ${st.isOpen?'disabled':''} onclick="resetClassVotes('${st.currentClass}')">현재 선택 반 표 삭제</button></div>`;
+    wrap.innerHTML+=`<div class="stationCard"><div class="stationTop"><div class="stationName">${escapeHtml(st.name)} <span class="muted">(${g}학년)</span></div><div class="pill ${st.isOpen?'live':'stop'}">${st.isOpen?'진행 중':'대기'}</div></div><div class="selectedBanner ${st.isOpen?'live':''}"><div class="label">현재 선택된 반</div><div class="className">${st.currentClass}</div><div class="count">${voted} / ${total}명 · ${st.isOpen?'투표 진행 중':'대기 중'}</div><div class="bar"><div style="width:${pct}%"></div></div></div><div class="row"><button class="green" ${st.isOpen?'disabled':''} onclick="startStation('${key}')">▶ ${st.currentClass} 투표 시작</button><button class="red" ${st.isOpen?'':'disabled'} onclick="stopStation('${key}')">■ ${st.currentClass} 투표 종료</button></div><div class="muted" style="margin-top:10px">${st.isOpen?'투표 진행 중에는 반 선택이 잠깁니다.':'투표 종료 상태입니다. 아래에서 원하는 반을 선택한 뒤 투표 시작을 누르세요.'}</div><h3>투표할 반 선택</h3><div class="legend"><span>🔵 현재 선택</span><span>🟢 완료</span><span>🟠 일부 투표</span><span>⚪ 미진행</span></div><div class="classButtons">${btns}</div><button class="ghost" style="width:100%;margin-top:10px" ${st.isOpen?'disabled':''} onclick="resetClassVotes('${st.currentClass}')">현재 선택 반 표 삭제</button></div>`;
   }
 }
 window.selectClass=async function(stationKey,classKey){
@@ -398,7 +398,7 @@ window.stopStation=async function(stationKey){
   if(!confirm(`${st.name} / ${st.currentClass}반 투표를 종료할까요?\n현재 투표수: ${v}/${t}명\n남은 인원: ${r}명`)) return;
   st.isOpen=false;
   const ok=await saveStationsDoc();
-  if(ok) msg(`${st.currentClass}반 투표가 종료되었습니다. (${v}/${t}명)`);
+  if(ok) msg(`${st.currentClass}반 투표가 종료되었습니다. (${v}/${t}명) 이제 원하는 반을 선택할 수 있습니다.`);
 };
 window.resetClassVotes=async function(classKey){
   if(!db || !confirm(`${classKey}반 표를 삭제할까요?`)) return;
@@ -408,18 +408,33 @@ window.resetClassVotes=async function(classKey){
   msg(`${classKey}반 표를 삭제했습니다.`);
 };
 
+function abstainCandidateNums(){
+  return (settings.candidates||[])
+    .filter(c=>String(c.name||"").trim()==="기권")
+    .map(c=>Number(c.num));
+}
+function normalCandidates(){
+  return (settings.candidates||[]).filter(c=>String(c.name||"").trim()!=="기권");
+}
+function abstainVotes(classKey){
+  const nums=abstainCandidateNums();
+  if(!nums.length) return 0;
+  return votes.filter(v=>v.classKey===classKey && nums.includes(Number(v.candidateNum))).length;
+}
 function gradeTotals(){
   const grades={};
+  const normals=normalCandidates();
   for(let g=1;g<=settings.gradeCount;g++) grades[g]={total:0,voted:0,abstain:0,candidate:{}};
   Object.values(settings.classes).forEach(cls=>{
     if(cls.grade>settings.gradeCount || cls.classNo>settings.classCount) return;
     const key=`${cls.grade}-${cls.classNo}`;
-    const v=countVotes(key);
-    const a=Math.max(0,cls.total-v);
+    const voted=countVotes(key);
+    const nonVoters=Math.max(0,cls.total-voted);
+    const abstainSelected=abstainVotes(key);
     grades[cls.grade].total+=cls.total;
-    grades[cls.grade].voted+=v;
-    grades[cls.grade].abstain+=a;
-    settings.candidates.forEach(c=>grades[cls.grade].candidate[c.num]=(grades[cls.grade].candidate[c.num]||0)+countVotes(key,c.num));
+    grades[cls.grade].voted+=voted;
+    grades[cls.grade].abstain+=nonVoters+abstainSelected;
+    normals.forEach(c=>grades[cls.grade].candidate[c.num]=(grades[cls.grade].candidate[c.num]||0)+countVotes(key,c.num));
   });
   return grades;
 }
@@ -437,7 +452,7 @@ function resultHTML(){
   h+=`</tr><tr><td colspan="${settings.gradeCount}">${totalVoters}</td><td colspan="${settings.gradeCount}">${totalVoted}</td><td></td></tr></table><table><tr><th>기호</th>`;
   for(let g=1;g<=settings.gradeCount;g++) h+=`<th>${g}학년</th>`;
   h+=`<th>계</th></tr>`;
-  settings.candidates.forEach(c=>{
+  normalCandidates().forEach(c=>{
     let sum=0; h+=`<tr><th>${c.num}번</th>`;
     for(let g=1;g<=settings.gradeCount;g++){ const v=grades[g].candidate[c.num]||0; sum+=v; h+=`<td>${v}</td>`; }
     h+=`<td>${sum}표</td></tr>`;
@@ -450,9 +465,9 @@ function resultHTML(){
     for(let c=1;c<=settings.classCount;c++){
       const key=`${g}-${c}`, t=classTotal(key), v=countVotes(key), a=Math.max(0,t-v);
       h+=`<div class="classBox"><div class="classTitle">${c}반</div><table class="miniTable"><tr>`;
-      settings.candidates.forEach(can=>h+=`<th>${can.num}번</th>`);
+      normalCandidates().forEach(can=>h+=`<th>${can.num}번</th>`);
       h+=`<th>기권</th></tr><tr>`;
-      settings.candidates.forEach(can=>h+=`<td>${countVotes(key,can.num)}</td>`);
+      normalCandidates().forEach(can=>h+=`<td>${countVotes(key,can.num)}</td>`);
       h+=`<td>${a}</td></tr></table><div class="classSum">총계: ${t}</div></div>`;
     }
     h+=`</div>`;
@@ -476,14 +491,14 @@ window.downloadExcel=function(){
   const summary=[["구분",...Array.from({length:settings.gradeCount},(_,i)=>`${i+1}학년`),"계"]];
   summary.push(["선거인수",...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].total),Object.values(grades).reduce((a,g)=>a+g.total,0)]);
   summary.push(["투표자수",...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].voted),Object.values(grades).reduce((a,g)=>a+g.voted,0)]);
-  settings.candidates.forEach(c=>summary.push([`${c.num}번 ${c.name}`,...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].candidate[c.num]||0),Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].candidate[c.num]||0).reduce((a,b)=>a+b,0)]));
+  normalCandidates().forEach(c=>summary.push([`${c.num}번 ${c.name}`,...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].candidate[c.num]||0),Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].candidate[c.num]||0).reduce((a,b)=>a+b,0)]));
   summary.push(["기권",...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].abstain),Object.values(grades).reduce((a,g)=>a+g.abstain,0)]);
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(summary),"개표결과");
-  const rows=[["학년","반","재적","투표","기권",...settings.candidates.map(c=>`${c.num}번 ${c.name}`)]];
+  const rows=[["학년","반","재적","투표","기권",...normalCandidates().map(c=>`${c.num}번 ${c.name}`)]];
   for(let g=1;g<=settings.gradeCount;g++){
     for(let c=1;c<=settings.classCount;c++){
       const key=`${g}-${c}`, t=classTotal(key), v=countVotes(key), a=Math.max(0,t-v);
-      rows.push([g,c,t,v,a,...settings.candidates.map(can=>countVotes(key,can.num))]);
+      rows.push([g,c,t,v,a,...normalCandidates().map(can=>countVotes(key,can.num))]);
     }
   }
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),"반별집계");
