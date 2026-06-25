@@ -19,11 +19,14 @@ button{border:0;border-radius:14px;padding:12px 15px;background:var(--blue);colo
 input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:13px;font-size:15px;background:#fff}textarea{min-height:120px;font-family:monospace}label{display:block;font-weight:900;font-size:13px;margin:12px 0 6px}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.hidden{display:none!important}.pill{display:inline-flex;padding:8px 11px;border-radius:999px;background:var(--soft);color:var(--navy);font-weight:1000;font-size:13px}.pill.live{background:#dcfce7;color:#166534}.pill.stop{background:#fee2e2;color:#991b1b}.pill.wait{background:#f1f5f9;color:#334155}
 .stationCard{border:1px solid var(--line);border-radius:22px;padding:18px;background:linear-gradient(180deg,#fff,#f8fbff)}.stationTop{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}.stationName{font-size:19px;font-weight:1000}.currentClass{background:var(--soft);border:1px dashed #aac7f4;border-radius:18px;padding:18px;text-align:center;margin:12px 0}.currentClass .big{font-size:42px;font-weight:1000;letter-spacing:-.05em;color:var(--navy)}.bar{height:12px;background:#e5eefb;border-radius:999px;overflow:hidden;margin:10px 0}.bar>div{height:100%;background:var(--blue);border-radius:999px;width:0%}
-.classButtons{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.classButtons button{background:#fff;color:var(--navy);border:1px solid var(--line);min-height:54px}.classButtons button.selected{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.18)}.classButtons button.done{background:#dcfce7;color:#166534;border-color:#86efac}.classButtons button.activeClass{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.2)}.classButtons button.partial{background:#fff7ed;color:#9a3412;border-color:#fed7aa}
+.classButtons{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.classButtons button{background:#fff;color:var(--navy);border:1px solid var(--line);min-height:60px;line-height:1.25}.classButtons button.selected{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.18)}.classButtons button.done{background:#dcfce7;color:#166534;border-color:#86efac}.classButtons button.activeClass{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.2)}.classButtons button.partial{background:#fff7ed;color:#9a3412;border-color:#fed7aa}.classButtons button:disabled{opacity:.55;cursor:not-allowed}
 .selectedClassBanner{margin:12px 0 14px;padding:16px;border-radius:18px;background:#eff6ff;border:2px solid var(--blue);text-align:center}
+.selectedClassBanner.live{background:#ecfdf5;border-color:#16a34a}
 .selectedClassBanner .label{font-size:13px;font-weight:1000;color:var(--muted)}
-.selectedClassBanner .className{font-size:38px;font-weight:1000;color:var(--navy);letter-spacing:-.05em;margin-top:3px}
+.selectedClassBanner .className{font-size:42px;font-weight:1000;color:var(--navy);letter-spacing:-.05em;margin-top:3px}
+.selectedClassBanner.live .className{color:#166534}
 .selectedClassBanner .count{font-size:15px;font-weight:900;color:var(--navy);margin-top:4px}
+.stationHelp{margin:10px 0;padding:10px 12px;border-radius:14px;background:#f8fafc;border:1px solid var(--line);font-size:13px;font-weight:800;color:var(--muted);line-height:1.45}
 .legend{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px}
 .legend span{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:900;color:var(--muted)}
 .legend i{width:14px;height:14px;border-radius:4px;border:1px solid var(--line);display:inline-block}
@@ -48,7 +51,7 @@ table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,
 <body>
 <header><div class="top"><div class="brand" onclick="go('vote')" title="메인화면으로 이동" style="cursor:pointer"><h1>대덕고 47대 학생회장 선거</h1><p>SchoolVote · 여러 태블릿 동시 투표 · 실시간 연동</p></div><div class="nav">
 <button class="navBtn" data-screen="monitor" onclick="go('monitor')">실시간 현황</button>
-<button class="navBtn" data-screen="admin" onclick="goAdmin('admin')">관리자 설정</button>
+<button class="navBtn" data-screen="admin" onclick="openAdminLogin()">관리자 설정</button>
 </div></div></header>
 <main>
 <div id="systemMsg" class="systemMsg"></div>
@@ -74,7 +77,7 @@ table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,
     <button onclick="goAdmin('result')">개표 결과</button>
   </div>
 </div>
-<div class="grid"><div class="card"><h2>연동 상태</h2><p class="muted">Firebase 정보가 앱에 내장되어 있습니다. PC와 아이패드는 같은 파일 또는 같은 링크로 접속하면 자동으로 같은 선거 데이터에 연결됩니다.</p><div class="notice" style="margin-top:14px">아이패드에서는 Firebase 설정을 입력할 필요가 없습니다. 학생 투표 화면에서 투표소만 선택하면 됩니다.</div></div><div class="card"><h2>관리자 설정</h2><label>관리자 비밀번호 변경</label><input id="newPassword" type="password" placeholder="새 비밀번호"/><button style="width:100%;margin-top:12px" onclick="changePassword()">비밀번호 변경</button><button class="red" style="width:100%;margin-top:12px" onclick="resetAllVotes()">전체 투표 데이터 초기화</button></div></div></section>
+<div class="grid"><div class="card"><h2>Firebase 설정</h2><p class="muted">PC, 아이패드, 태블릿마다 아래 Firebase 설정을 한 번씩 붙여넣고 저장하세요. 같은 설정을 넣은 기기끼리 실시간 연동됩니다.</p><textarea id="firebaseConfigInput" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}'></textarea><button style="width:100%;margin-top:12px" onclick="saveFirebaseConfig()">Firebase 설정 저장 후 새로고침</button><div class="notice" style="margin-top:14px">Firebase 콘솔에서 복사한 코드 전체를 붙여넣어도 됩니다. const firebaseConfig = {...}; 형태도 자동으로 처리합니다.</div></div><div class="card"><h2>관리자 설정</h2><label>관리자 비밀번호 변경</label><input id="newPassword" type="password" placeholder="새 비밀번호"/><button style="width:100%;margin-top:12px" onclick="changePassword()">비밀번호 변경</button><button class="red" style="width:100%;margin-top:12px" onclick="resetAllVotes()">전체 투표 데이터 초기화</button></div></div></section>
 </main>
 
 <script type="module">
@@ -108,17 +111,36 @@ function ensureData(){
   }
 }
 function firebaseConfig(){
-  return {
-  apiKey: "AIzaSyAx2Y6JihyqJJEhT7Gx5gdgQvoHDJ2mYE8",
-  authDomain: "schoolvote-2ea26.firebaseapp.com",
-  projectId: "schoolvote-2ea26",
-  storageBucket: "schoolvote-2ea26.firebasestorage.app",
-  messagingSenderId: "829275809460",
-  appId: "1:829275809460:web:b6f51f6eb2cdd5c33459e1"
-};
+  const raw = localStorage.getItem("schoolVoteFirebaseConfig");
+  if(!raw) return null;
+  try { return JSON.parse(raw); } catch(e) { return null; }
+}
+function parseFirebaseInput(raw){
+  let text = (raw || "").trim();
+  if(!text) throw new Error("Firebase 설정값을 입력하세요.");
+  // Firebase 콘솔의 전체 코드에서 객체 부분만 추출
+  const match = text.match(/firebaseConfig\s*=\s*(\{[\s\S]*?\})\s*;?/);
+  if(match) text = match[1];
+  // JS 객체 형식(apiKey: "...")을 JSON으로 변환
+  text = text
+    .replace(/^\s*const\s+firebaseConfig\s*=\s*/, "")
+    .replace(/;\s*$/, "")
+    .replace(/([{,]\s*)([A-Za-z0-9_]+)\s*:/g, '$1"$2":')
+    .replace(/'/g, '"');
+  return JSON.parse(text);
 }
 async function initFirebase(){
   const cfg=firebaseConfig();
+  const input=document.getElementById("firebaseConfigInput");
+  if(input && localStorage.getItem("schoolVoteFirebaseConfig")){
+    input.value = JSON.stringify(cfg, null, 2);
+  }
+  if(!cfg || !cfg.projectId){
+    const el=document.getElementById("overallState");
+    if(el){el.className="pill stop"; el.textContent="Firebase 설정 필요";}
+    render();
+    return;
+  }
   const app=initializeApp(cfg); db=getFirestore(app);
   const ref=doc(db,"schoolVoteElections",ELECTION_ID);
   const snap=await getDoc(ref);
@@ -150,6 +172,13 @@ function countVotes(classKey, candidateNum=null){ return votes.filter(v=>v.class
 function classTotal(classKey){ return data.classes[classKey]?.total||0; }
 
 window.go=function(id){ local.activeTarget=id; saveLocal(); show(id); }
+window.openAdminLogin=function(){
+  local.admin=false;
+  local.targetAfterLogin="admin";
+  local.activeTarget="admin";
+  saveLocal();
+  show("login");
+}
 window.goAdmin=function(id){ local.targetAfterLogin=id; local.activeTarget=id; saveLocal(); if(!local.admin) show("login"); else show(id); }
 function show(id){
   document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
@@ -167,7 +196,7 @@ function render(){
 }
 function renderMonitor(){
   const anyOpen=Object.values(data.stations).some(s=>s.isOpen);
-  const state=document.getElementById("overallState"); if(state){state.className="pill "+(anyOpen?"live":"wait"); state.textContent=db?(anyOpen?"투표 진행 중":"대기 중"):"Firebase 연결 확인 중";}
+  const state=document.getElementById("overallState"); if(state){state.className="pill "+(anyOpen?"live":"wait"); state.textContent=db?(anyOpen?"투표 진행 중":"대기 중"):"Firebase 설정 필요";}
   const wrap=document.getElementById("monitorCards"); if(!wrap)return; wrap.innerHTML="";
   for(let g=1;g<=data.gradeCount;g++){ const st=data.stations["grade"+g]; if(!st)continue; const total=classTotal(st.currentClass), voted=countVotes(st.currentClass), pct=total?Math.min(100,(voted/total*100).toFixed(1)):0;
     wrap.innerHTML+=`<div class="stationCard"><div class="stationTop"><div class="stationName">${st.name}</div><div class="pill ${st.isOpen?'live':'stop'}">${st.isOpen?'진행':'대기'}</div></div><div class="muted">${g}학년 현재 학급</div><div style="font-size:34px;font-weight:1000;color:var(--navy);margin-top:4px">${st.currentClass}</div><div class="bar"><div style="width:${pct}%"></div></div><div class="muted">${voted} / ${total}명 · ${pct}%</div></div>`;
@@ -249,7 +278,7 @@ function renderManage(){
   for(let g=1;g<=data.gradeCount;g++){
     const sk="grade"+g, st=data.stations[sk]; if(!st)continue;
     const total=classTotal(st.currentClass), voted=countVotes(st.currentClass), pct=total?Math.min(100,Math.round(voted/total*100)):0;
-    const statusText = st.isOpen ? "투표 진행 중" : "선택됨 / 대기";
+    const statusText = st.isOpen ? "투표 진행 중 · 다른 반 선택 불가" : "대기 중 · 반 선택 가능";
     const btns=Array.from({length:data.classCount},(_,i)=>{
       const k=`${g}-${i+1}`;
       const t=classTotal(k), v=countVotes(k);
@@ -258,24 +287,29 @@ function renderManage(){
       else if(t>0 && v>=t) cls="done";
       else if(v>0) cls="partial";
       const icon = st.currentClass===k ? "🔵" : (t>0 && v>=t ? "🟢" : (v>0 ? "🟠" : "⚪"));
-      return `<button class="${cls}" onclick="selectClass('${sk}','${k}')" title="${k} ${v}/${t}명">${icon}<br><b>${k}</b><br><small>${v}/${t}</small></button>`;
+      const disabled = st.isOpen && st.currentClass!==k ? "disabled" : "";
+      const click = disabled ? "" : `onclick="selectClass('${sk}','${k}')"`;
+      return `<button class="${cls}" ${disabled} ${click} title="${k} ${v}/${t}명">${icon}<br><b>${k}</b><br><small>${v}/${t}</small></button>`;
     }).join("");
     wrap.innerHTML+=`<div class="stationCard">
       <div class="stationTop">
         <div class="stationName">${st.name} <span class="muted">(${g}학년)</span></div>
         <div class="pill ${st.isOpen?'live':'stop'}">${st.isOpen?'진행 중':'대기'}</div>
       </div>
-      <div class="selectedClassBanner">
+      <div class="selectedClassBanner ${st.isOpen?'live':''}">
         <div class="label">현재 선택된 반</div>
         <div class="className">${st.currentClass}</div>
         <div class="count">${voted} / ${total}명 · ${statusText}</div>
         <div class="bar"><div style="width:${pct}%"></div></div>
       </div>
-      <div class="row">
-        <button class="green" onclick="startStation('${sk}')">▶ ${st.currentClass} 투표 시작</button>
-        <button class="red" onclick="stopStation('${sk}')">■ ${st.currentClass} 투표 종료</button>
+      <div class="stationHelp">
+        ${st.isOpen ? "현재 투표가 진행 중입니다. 다른 반으로 바꾸려면 먼저 투표 종료를 눌러주세요." : "아래 학급 버튼을 눌러 투표할 반을 선택한 뒤 투표 시작을 누르세요."}
       </div>
-      <button class="secondary" style="width:100%;margin-top:8px" onclick="nextClass('${sk}')">다음 반으로 이동</button>
+      <div class="row">
+        <button class="green" ${st.isOpen?'disabled':''} onclick="startStation('${sk}')">▶ ${st.currentClass} 투표 시작</button>
+        <button class="red" ${st.isOpen?'':'disabled'} onclick="stopStation('${sk}')">■ ${st.currentClass} 투표 종료</button>
+      </div>
+      <button class="secondary" style="width:100%;margin-top:8px" ${st.isOpen?'disabled':''} onclick="nextClass('${sk}')">다음 반으로 이동</button>
       <h3>투표할 반 선택</h3>
       <div class="legend">
         <span class="now"><i></i>현재 선택</span>
@@ -284,7 +318,7 @@ function renderManage(){
         <span class="none"><i></i>미진행</span>
       </div>
       <div class="classButtons">${btns}</div>
-      <button class="ghost" style="width:100%;margin-top:10px" onclick="resetClassVotes('${st.currentClass}')">현재 선택 반 표 삭제</button>
+      <button class="ghost" style="width:100%;margin-top:10px" ${st.isOpen?'disabled':''} onclick="resetClassVotes('${st.currentClass}')">현재 선택 반 표 삭제</button>
     </div>`;
   }
 }
@@ -353,6 +387,17 @@ window.downloadExcel=function(){
 }
 window.changePassword=async function(){ const v=document.getElementById("newPassword").value.trim(); if(!v)return alert("새 비밀번호를 입력하세요."); await updateElection({password:v}); document.getElementById("newPassword").value=""; alert("변경되었습니다.");}
 window.resetAllVotes=async function(){ if(!db||!confirm("전체 투표 데이터를 삭제할까요?"))return; const qs=await getDocs(collection(db,"schoolVoteElections",ELECTION_ID,"votes")); await Promise.all(qs.docs.map(d=>deleteDoc(d.ref))); }
+window.saveFirebaseConfig=function(){
+  try{
+    const cfg=parseFirebaseInput(document.getElementById("firebaseConfigInput").value);
+    if(!cfg.apiKey || !cfg.projectId || !cfg.appId) throw new Error("apiKey, projectId, appId가 포함되어야 합니다.");
+    localStorage.setItem("schoolVoteFirebaseConfig", JSON.stringify(cfg));
+    alert("Firebase 설정이 저장되었습니다. 새로고침합니다.");
+    location.reload();
+  }catch(error){
+    alert("Firebase 설정 형식이 올바르지 않습니다.\n" + (error.message || error));
+  }
+}
 initFirebase().catch(error=>{
   console.error(error);
   const el=document.getElementById("overallState");
