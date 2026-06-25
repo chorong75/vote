@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>SchoolVote Firebase</title>
+<title>학생회장 선거 전자투표</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{--blue:#2563eb;--navy:#1e3a8a;--soft:#eef6ff;--soft2:#f8fbff;--line:#d8e6f8;--text:#172033;--muted:#64748b;--green:#16a34a;--red:#dc2626;--shadow:0 14px 36px rgba(37,99,235,.09)}
@@ -31,7 +31,7 @@ table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,
 </style>
 </head>
 <body>
-<header><div class="top"><div class="brand" onclick="go('vote')" title="메인화면으로 이동" style="cursor:pointer"><h1>대덕고 47대 학생회장 선거</h1><p>SchoolVote · 동시 투표 · 실시간 연동</p></div><div class="nav">
+<header><div class="top"><div class="brand" onclick="go('vote')" title="메인화면으로 이동" style="cursor:pointer"><h1>학생회장 선거</h1><p>SchoolVote · 여러 태블릿 동시 투표 · Firebase 실시간 연동</p></div><div class="nav">
 <button class="navBtn" data-screen="monitor" onclick="go('monitor')">실시간 현황</button>
 <button class="navBtn" data-screen="admin" onclick="goAdmin('admin')">관리자 설정</button>
 </div></div></header>
@@ -58,7 +58,7 @@ table{border-collapse:collapse;width:100%;background:white;margin:8px 0 22px}th,
     <button onclick="goAdmin('result')">개표 결과</button>
   </div>
 </div>
-<div class="grid"><div class="card"><h2>Firebase 설정</h2><p class="muted">아래에 Firebase 웹앱 설정 JSON을 붙여넣고 저장하세요. 저장 후 새로고침하면 여러 기기 연동이 됩니다.</p><textarea id="firebaseConfigInput" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}'></textarea><button style="width:100%;margin-top:12px" onclick="saveFirebaseConfig()">Firebase 설정 저장 후 새로고침</button><div class="notice" style="margin-top:14px">Firebase 콘솔에서 Firestore Database를 만든 뒤 테스트 모드로 시작하면 바로 실험할 수 있습니다.</div></div><div class="card"><h2>관리자 설정</h2><label>관리자 비밀번호 변경</label><input id="newPassword" type="password" placeholder="새 비밀번호"/><button style="width:100%;margin-top:12px" onclick="changePassword()">비밀번호 변경</button><button class="red" style="width:100%;margin-top:12px" onclick="resetAllVotes()">전체 투표 데이터 초기화</button></div></div></section>
+<div class="grid"><div class="card"><h2>연동 상태</h2><p class="muted">Firebase 정보가 앱에 내장되어 있습니다. PC와 아이패드는 같은 파일 또는 같은 링크로 접속하면 자동으로 같은 선거 데이터에 연결됩니다.</p><div class="notice" style="margin-top:14px">아이패드에서는 Firebase 설정을 입력할 필요가 없습니다. 학생 투표 화면에서 투표소만 선택하면 됩니다.</div></div><div class="card"><h2>관리자 설정</h2><label>관리자 비밀번호 변경</label><input id="newPassword" type="password" placeholder="새 비밀번호"/><button style="width:100%;margin-top:12px" onclick="changePassword()">비밀번호 변경</button><button class="red" style="width:100%;margin-top:12px" onclick="resetAllVotes()">전체 투표 데이터 초기화</button></div></div></section>
 </main>
 
 <script type="module">
@@ -92,12 +92,17 @@ function ensureData(){
   }
 }
 function firebaseConfig(){
-  try{return JSON.parse(localStorage.getItem("schoolVoteFirebaseConfig")||"null")}catch(e){return null}
+  return {
+  apiKey: "AIzaSyAx2Y6JihyqJJEhT7Gx5gdgQvoHDJ2mYE8",
+  authDomain: "schoolvote-2ea26.firebaseapp.com",
+  projectId: "schoolvote-2ea26",
+  storageBucket: "schoolvote-2ea26.firebasestorage.app",
+  messagingSenderId: "829275809460",
+  appId: "1:829275809460:web:b6f51f6eb2cdd5c33459e1"
+};
 }
 async function initFirebase(){
   const cfg=firebaseConfig();
-  const input=document.getElementById("firebaseConfigInput"); if(input&&cfg) input.value=JSON.stringify(cfg,null,2);
-  if(!cfg || !cfg.projectId){ document.getElementById("overallState").textContent="Firebase 설정 필요"; render(); return; }
   const app=initializeApp(cfg); db=getFirestore(app);
   const ref=doc(db,"schoolVoteElections",ELECTION_ID);
   const snap=await getDoc(ref);
@@ -105,7 +110,7 @@ async function initFirebase(){
   unsubData=onSnapshot(ref, s=>{ data=s.data()||structuredClone(defaultData); ensureData(); render(); });
   unsubVotes=onSnapshot(collection(db,"schoolVoteElections",ELECTION_ID,"votes"), s=>{ votes=s.docs.map(d=>({id:d.id,...d.data()})); render(); });
 }
-async function updateElection(patch){ if(!db){alert("Firebase 설정이 필요합니다.");return;} await setDoc(doc(db,"schoolVoteElections",ELECTION_ID), patch, {merge:true}); }
+async function updateElection(patch){ if(!db){alert("Firebase 연결을 확인하는 중입니다. 잠시 후 다시 시도하세요.");return;} await setDoc(doc(db,"schoolVoteElections",ELECTION_ID), patch, {merge:true}); }
 function countVotes(classKey, candidateNum=null){ return votes.filter(v=>v.classKey===classKey && (candidateNum==null || Number(v.candidateNum)===Number(candidateNum))).length; }
 function classTotal(classKey){ return data.classes[classKey]?.total||0; }
 
@@ -127,7 +132,7 @@ function render(){
 }
 function renderMonitor(){
   const anyOpen=Object.values(data.stations).some(s=>s.isOpen);
-  const state=document.getElementById("overallState"); if(state){state.className="pill "+(anyOpen?"live":"wait"); state.textContent=db?(anyOpen?"투표 진행 중":"대기 중"):"Firebase 설정 필요";}
+  const state=document.getElementById("overallState"); if(state){state.className="pill "+(anyOpen?"live":"wait"); state.textContent=db?(anyOpen?"투표 진행 중":"대기 중"):"Firebase 연결 확인 중";}
   const wrap=document.getElementById("monitorCards"); if(!wrap)return; wrap.innerHTML="";
   for(let g=1;g<=data.gradeCount;g++){ const st=data.stations["grade"+g]; if(!st)continue; const total=classTotal(st.currentClass), voted=countVotes(st.currentClass), pct=total?Math.min(100,(voted/total*100).toFixed(1)):0;
     wrap.innerHTML+=`<div class="stationCard"><div class="stationTop"><div class="stationName">${st.name}</div><div class="pill ${st.isOpen?'live':'stop'}">${st.isOpen?'진행':'대기'}</div></div><div class="muted">${g}학년 현재 학급</div><div style="font-size:34px;font-weight:1000;color:var(--navy);margin-top:4px">${st.currentClass}</div><div class="bar"><div style="width:${pct}%"></div></div><div class="muted">${voted} / ${total}명 · ${pct}%</div></div>`;
@@ -147,7 +152,7 @@ function renderVote(){
   const btn=document.getElementById("voteButton"); btn.disabled=!(db && st.isOpen && local.selectedCandidate && !full); btn.textContent=full?"재적 인원 도달":"투표하기";
 }
 window.castVote=async function(){
-  if(!db){alert("Firebase 설정이 필요합니다.");return;}
+  if(!db){alert("Firebase 연결을 확인하는 중입니다. 잠시 후 다시 시도하세요.");return;}
   const st=data.stations[local.tabletStation]; if(!st||!st.isOpen||!local.selectedCandidate)return;
   const total=classTotal(st.currentClass), voted=countVotes(st.currentClass);
   if(voted>=total){alert("해당 학급 재적 인원에 도달했습니다.");return;}
@@ -208,7 +213,6 @@ window.downloadExcel=function(){
 }
 window.changePassword=async function(){ const v=document.getElementById("newPassword").value.trim(); if(!v)return alert("새 비밀번호를 입력하세요."); await updateElection({password:v}); document.getElementById("newPassword").value=""; alert("변경되었습니다.");}
 window.resetAllVotes=async function(){ if(!db||!confirm("전체 투표 데이터를 삭제할까요?"))return; const qs=await getDocs(collection(db,"schoolVoteElections",ELECTION_ID,"votes")); await Promise.all(qs.docs.map(d=>deleteDoc(d.ref))); }
-window.saveFirebaseConfig=function(){ try{const cfg=JSON.parse(document.getElementById("firebaseConfigInput").value); localStorage.setItem("schoolVoteFirebaseConfig",JSON.stringify(cfg)); alert("저장되었습니다. 새로고침합니다."); location.reload();}catch(e){alert("Firebase 설정 JSON 형식이 올바르지 않습니다.");}}
 initFirebase();
 </script>
 </body>
