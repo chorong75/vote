@@ -27,9 +27,9 @@ export const DEFAULT_SETTINGS = {
 };
 
 export const DEFAULT_STATIONS = {
-  grade1:{name:"제1투표소",grade:1,currentClass:"1-1",isOpen:false},
-  grade2:{name:"제2투표소",grade:2,currentClass:"2-1",isOpen:false},
-  grade3:{name:"제3투표소",grade:3,currentClass:"3-1",isOpen:false}
+  grade1:{name:"제 1투표소",grade:1,currentClass:"1-1",isOpen:false},
+  grade2:{name:"제 2투표소",grade:2,currentClass:"2-1",isOpen:false},
+  grade3:{name:"제 3투표소",grade:3,currentClass:"3-1",isOpen:false}
 };
 
 export function parseFirebaseInput(raw){
