@@ -163,11 +163,6 @@ function render(){
     locationEl.textContent=st.location ? `📍 ${st.location}` : "";
     locationEl.classList.toggle("hidden", !st.location);
   }
-  const locationEl=document.getElementById("stationLocation");
-  if(locationEl){
-    locationEl.textContent=st.location ? `📍 ${st.location}` : "";
-    locationEl.classList.toggle("hidden", !st.location);
-  }
 
   const classEl=document.getElementById("classText");
   classEl.textContent=st.isOpen ? st.currentClass : "투표 대기 중";
