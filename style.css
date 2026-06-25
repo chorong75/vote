@@ -517,3 +517,12 @@ th{font-weight:1000;background:#f8fafc}
     grid-template-columns:1fr;
   }
 }
+
+
+/* station location display */
+.boothLocation{
+  margin-top:8px;
+  font-size:18px;
+  font-weight:700;
+  color:var(--muted);
+}

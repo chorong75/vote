@@ -73,8 +73,8 @@
           <button id="saveSettingsBtn" onclick="saveSettings()">선거 설정 저장</button>
         </div>
 
-        <h3 style="margin-top:24px">투표소 이름/색상 설정</h3>
-        <p class="muted">학생 화면과 투표 진행 화면에 표시되는 투표소 이름입니다.</p>
+        <h3 style="margin-top:24px">투표소 이름/위치 설정</h3>
+        <p class="muted">학생 화면과 투표 진행 화면에 표시되는 투표소 이름과 위치입니다.</p>
         <div id="stationSettings"></div>
         <button id="saveStationsBtn" style="width:100%;margin-top:12px" onclick="saveStationSettings()">투표소 설정 저장</button>
       </div>
@@ -274,23 +274,20 @@ function renderStationSettings(){
   if(!wrap) return;
   ensureStations(settings, stations);
   wrap.innerHTML="";
-  const colors=["🔵","🟢","🟠","🟣","🔴","⚪"];
   for(let g=1; g<=Number(settings.gradeCount||3); g++){
     const key=`grade${g}`;
     const st=stations[key];
     if(!st) continue;
-    if(!st.color) st.color=colors[g-1]||"🔵";
+    if(st.location===undefined) st.location="";
     wrap.innerHTML+=`
       <div class="row" style="margin-bottom:8px">
-        <div style="flex:.45">
-          <label>${g}학년 투표소 색상</label>
-          <select onchange="updateStationSetting('${key}','color',this.value)">
-            ${colors.map(c=>`<option value="${c}" ${st.color===c?'selected':''}>${c}</option>`).join("")}
-          </select>
-        </div>
         <div>
           <label>${g}학년 투표소 이름</label>
           <input value="${escapeHtml(st.name)}" oninput="updateStationSetting('${key}','name',this.value)">
+        </div>
+        <div>
+          <label>${g}학년 투표소 위치</label>
+          <input value="${escapeHtml(st.location||"")}" placeholder="예: 중앙현관, 시청각실, 체육관" oninput="updateStationSetting('${key}','location',this.value)">
         </div>
       </div>`;
   }
@@ -305,7 +302,7 @@ window.saveStationSettings=async function(){
   if(btn){btn.disabled=true;btn.dataset.orig=btn.dataset.orig||btn.textContent;btn.textContent="저장 중...";}
   const ok=await saveStationsDoc();
   if(btn){btn.disabled=false;btn.textContent=ok?"저장 완료":btn.dataset.orig;setTimeout(()=>btn.textContent=btn.dataset.orig,1600);}
-  if(ok) msg("투표소 이름/색상 설정이 저장되었습니다.");
+  if(ok) msg("투표소 이름/위치 설정이 저장되었습니다.");
 };
 
 function renderTotals(){
@@ -404,7 +401,7 @@ function renderManage(){
     const key=`grade${g}`;
     const st=stations[key];
     if(!st) continue;
-    if(!st.color) st.color=["🔵","🟢","🟠","🟣","🔴","⚪"][g-1]||"🔵";
+    if(st.location===undefined) st.location="";
     const total=classTotal(st.currentClass);
     const voted=countVotes(st.currentClass);
     const pct=total?Math.min(100,Math.round(voted/total*100)):0;
@@ -418,14 +415,14 @@ function renderManage(){
       const click=disabled ? "" : `onclick="selectClass('${key}','${classKey}')"`;
       return `<button class="${cls}" ${disabled} ${click}>${icon}<br><b>${classKey}</b><br><small>${v}/${t}</small></button>`;
     }).join("");
-    wrap.innerHTML+=`<div class="stationCard"><div class="stationTop"><div class="stationName">${escapeHtml(st.color||"")} ${escapeHtml(st.name)} <span class="muted">(${g}학년)</span></div><div class="pill ${st.isOpen?'live':'stop'}">${st.isOpen?'진행 중':'대기'}</div></div><div class="selectedBanner ${st.isOpen?'live':''}"><div class="label">현재 선택된 반</div><div class="className">${st.currentClass}</div><div class="count">${voted} / ${total}명 · ${st.isOpen?'투표 진행 중':'대기 중'}</div><div class="bar"><div style="width:${pct}%"></div></div></div><div class="row"><button class="green" ${st.isOpen?'disabled':''} onclick="startStation('${key}')">▶ ${st.currentClass} 투표 시작</button><button class="red" ${st.isOpen?'':'disabled'} onclick="stopStation('${key}')">■ ${st.currentClass} 투표 종료</button></div><div class="muted" style="margin-top:10px">${st.isOpen?'투표 진행 중에는 반 선택이 잠깁니다.':'투표 종료 상태입니다. 아래에서 원하는 반을 선택한 뒤 투표 시작을 누르세요.'}</div><h3>투표할 반 선택</h3><div class="legend"><span>🔵 현재 선택</span><span>🟢 완료</span><span>🟠 일부 투표</span><span>⚪ 미진행</span></div><div class="classButtons">${btns}</div><button class="ghost" style="width:100%;margin-top:10px" ${st.isOpen?'disabled':''} onclick="resetClassVotes('${st.currentClass}')">현재 선택 반 표 삭제</button></div>`;
+    wrap.innerHTML+=`<div class="stationCard"><div class="stationTop"><div class="stationName">${escapeHtml(st.name)} <span class="muted">(${g}학년)</span>${st.location?`<div class="muted" style="margin-top:4px">📍 ${escapeHtml(st.location)}</div>`:""}</div><div class="pill ${st.isOpen?'live':'stop'}">${st.isOpen?'진행 중':'대기'}</div></div><div class="selectedBanner ${st.isOpen?'live':''}"><div class="label">현재 선택된 반</div><div class="className">${st.currentClass}</div><div class="count">${voted} / ${total}명 · ${st.isOpen?'투표 진행 중':'대기 중'}</div><div class="bar"><div style="width:${pct}%"></div></div></div><div class="row"><button class="green" ${st.isOpen?'disabled':''} onclick="startStation('${key}')">▶ ${st.currentClass} 투표 시작</button><button class="red" ${st.isOpen?'':'disabled'} onclick="stopStation('${key}')">■ ${st.currentClass} 투표 종료</button></div><div class="muted" style="margin-top:10px">${st.isOpen?'투표 진행 중에는 반 선택이 잠깁니다.':'투표 종료 상태입니다. 아래에서 원하는 반을 선택한 뒤 투표 시작을 누르세요.'}</div><h3>투표할 반 선택</h3><div class="legend"><span>🔵 현재 선택</span><span>🟢 완료</span><span>🟠 일부 투표</span><span>⚪ 미진행</span></div><div class="classButtons">${btns}</div><button class="ghost" style="width:100%;margin-top:10px" ${st.isOpen?'disabled':''} onclick="resetClassVotes('${st.currentClass}')">현재 선택 반 표 삭제</button></div>`;
   }
 }
 window.selectClass=async function(stationKey,classKey){
   const st=stations[stationKey];
   if(st.isOpen) return alert("투표 진행 중에는 반을 바꿀 수 없습니다.");
   const v=countVotes(classKey), t=classTotal(classKey);
-  if(!confirm(`${st.color||""} ${st.name}에서 ${classKey}반을 선택할까요?\n현재 기록: ${v}/${t}명`)) return;
+  if(!confirm(`${st.name}${st.location?` (${st.location})`:""}에서 ${classKey}반을 선택할까요?\n현재 기록: ${v}/${t}명`)) return;
   st.currentClass=classKey;
   const ok=await saveStationsDoc();
   if(ok) msg(`${st.name}: ${classKey}반이 선택되었습니다.`);
@@ -433,7 +430,7 @@ window.selectClass=async function(stationKey,classKey){
 window.startStation=async function(stationKey){
   const st=stations[stationKey];
   if(st.isOpen) return msg("이미 투표 진행 중입니다.");
-  if(!confirm(`${st.color||""} ${st.name} / ${st.currentClass}반 투표를 시작할까요?`)) return;
+  if(!confirm(`${st.name}${st.location?` (${st.location})`:""} / ${st.currentClass}반 투표를 시작할까요?`)) return;
   st.isOpen=true;
   const ok=await saveStationsDoc();
   if(ok) msg(`${st.currentClass}반 투표가 시작되었습니다.`);
@@ -441,7 +438,7 @@ window.startStation=async function(stationKey){
 window.stopStation=async function(stationKey){
   const st=stations[stationKey];
   const v=countVotes(st.currentClass), t=classTotal(st.currentClass), r=Math.max(0,t-v);
-  if(!confirm(`${st.color||""} ${st.name} / ${st.currentClass}반 투표를 종료할까요?\n현재 투표수: ${v}/${t}명\n남은 인원: ${r}명`)) return;
+  if(!confirm(`${st.name}${st.location?` (${st.location})`:""} / ${st.currentClass}반 투표를 종료할까요?\n현재 투표수: ${v}/${t}명\n남은 인원: ${r}명`)) return;
   st.isOpen=false;
   const ok=await saveStationsDoc();
   if(ok) msg(`${st.currentClass}반 투표가 종료되었습니다. (${v}/${t}명) 이제 원하는 반을 선택할 수 있습니다.`);
