@@ -90,7 +90,7 @@
   <section id="manageTab" class="hidden">
     <div class="card">
       <h2>투표 진행</h2>
-      <p class="muted">원하는 반 선택 → 투표 시작 → 투표 종료 순서로 운영합니다. 투표 종료 후에는 아래 반 버튼에서 원하는 반을 자유롭게 다시 선택할 수 있습니다.</p>
+      <p class="muted">원하는 반 선택 → 투표 시작 → 투표 종료 순서로 운영합니다. 투표 진행 중에는 반 선택이 잠기고, 종료 후에는 원하는 반을 다시 선택할 수 있습니다.</p>
       <div id="stationManage" class="grid3"></div>
     </div>
   </section>
@@ -421,19 +421,25 @@ function abstainVotes(classKey){
   if(!nums.length) return 0;
   return votes.filter(v=>v.classKey===classKey && nums.includes(Number(v.candidateNum))).length;
 }
+function nonVoters(classKey){
+  return Math.max(0, classTotal(classKey)-countVotes(classKey));
+}
 function gradeTotals(){
   const grades={};
   const normals=normalCandidates();
-  for(let g=1;g<=settings.gradeCount;g++) grades[g]={total:0,voted:0,abstain:0,candidate:{}};
+  for(let g=1;g<=settings.gradeCount;g++){
+    grades[g]={total:0,voted:0,selectedAbstain:0,nonVoter:0,candidate:{}};
+  }
   Object.values(settings.classes).forEach(cls=>{
     if(cls.grade>settings.gradeCount || cls.classNo>settings.classCount) return;
     const key=`${cls.grade}-${cls.classNo}`;
     const voted=countVotes(key);
-    const nonVoters=Math.max(0,cls.total-voted);
-    const abstainSelected=abstainVotes(key);
+    const selectedAbstain=abstainVotes(key);
+    const nonVoter=Math.max(0,cls.total-voted);
     grades[cls.grade].total+=cls.total;
     grades[cls.grade].voted+=voted;
-    grades[cls.grade].abstain+=nonVoters+abstainSelected;
+    grades[cls.grade].selectedAbstain+=selectedAbstain;
+    grades[cls.grade].nonVoter+=nonVoter;
     normals.forEach(c=>grades[cls.grade].candidate[c.num]=(grades[cls.grade].candidate[c.num]||0)+countVotes(key,c.num));
   });
   return grades;
@@ -443,32 +449,66 @@ function resultHTML(){
   const totalVoters=Object.values(grades).reduce((a,g)=>a+g.total,0);
   const totalVoted=Object.values(grades).reduce((a,g)=>a+g.voted,0);
   const rate=totalVoters?((totalVoted/totalVoters)*100).toFixed(2):"0.00";
+  const normals=normalCandidates();
+
   let h=`<div class="resultTitle">선거 개표 결과</div><table><tr><th colspan="${settings.gradeCount}">선거인수</th><th colspan="${settings.gradeCount}">투표자수</th><th>투표율</th></tr><tr>`;
   for(let g=1;g<=settings.gradeCount;g++) h+=`<th>${g}학년</th>`;
   for(let g=1;g<=settings.gradeCount;g++) h+=`<th>${g}학년</th>`;
   h+=`<td rowspan="2">${rate}%</td></tr><tr>`;
   for(let g=1;g<=settings.gradeCount;g++) h+=`<td>${grades[g].total}</td>`;
   for(let g=1;g<=settings.gradeCount;g++) h+=`<td>${grades[g].voted}</td>`;
-  h+=`</tr><tr><td colspan="${settings.gradeCount}">${totalVoters}</td><td colspan="${settings.gradeCount}">${totalVoted}</td><td></td></tr></table><table><tr><th>기호</th>`;
+  h+=`</tr><tr><td colspan="${settings.gradeCount}">${totalVoters}</td><td colspan="${settings.gradeCount}">${totalVoted}</td><td></td></tr></table>`;
+
+  h+=`<table><tr><th>구분</th>`;
   for(let g=1;g<=settings.gradeCount;g++) h+=`<th>${g}학년</th>`;
   h+=`<th>계</th></tr>`;
-  normalCandidates().forEach(c=>{
-    let sum=0; h+=`<tr><th>${c.num}번</th>`;
-    for(let g=1;g<=settings.gradeCount;g++){ const v=grades[g].candidate[c.num]||0; sum+=v; h+=`<td>${v}</td>`; }
+
+  normals.forEach(c=>{
+    let sum=0;
+    h+=`<tr><th>${c.num}번</th>`;
+    for(let g=1;g<=settings.gradeCount;g++){
+      const v=grades[g].candidate[c.num]||0;
+      sum+=v;
+      h+=`<td>${v}</td>`;
+    }
     h+=`<td>${sum}표</td></tr>`;
   });
-  let abst=0; h+=`<tr><th>기권</th>`;
-  for(let g=1;g<=settings.gradeCount;g++){ abst+=grades[g].abstain; h+=`<td>${grades[g].abstain}</td>`; }
-  h+=`<td>${abst}표</td></tr></table>`;
+
+  let selectedAbstainSum=0;
+  h+=`<tr><th>기권</th>`;
+  for(let g=1;g<=settings.gradeCount;g++){
+    selectedAbstainSum+=grades[g].selectedAbstain;
+    h+=`<td>${grades[g].selectedAbstain}</td>`;
+  }
+  h+=`<td>${selectedAbstainSum}표</td></tr>`;
+
+  let nonVoterSum=0;
+  h+=`<tr><th>미투표(기권)</th>`;
+  for(let g=1;g<=settings.gradeCount;g++){
+    nonVoterSum+=grades[g].nonVoter;
+    h+=`<td>${grades[g].nonVoter}</td>`;
+  }
+  h+=`<td>${nonVoterSum}표</td></tr>`;
+
+  h+=`<tr><th>기권 계</th>`;
+  for(let g=1;g<=settings.gradeCount;g++){
+    h+=`<td>${grades[g].selectedAbstain + grades[g].nonVoter}</td>`;
+  }
+  h+=`<td>${selectedAbstainSum + nonVoterSum}표</td></tr></table>`;
+
   for(let g=1;g<=settings.gradeCount;g++){
     h+=`<div class="resultTitle" style="font-size:24px;margin-top:30px">${escapeHtml(settings.electionName)} 집계표(${g}학년)</div><div class="classReportGrid">`;
     for(let c=1;c<=settings.classCount;c++){
-      const key=`${g}-${c}`, t=classTotal(key), v=countVotes(key), a=Math.max(0,t-v);
+      const key=`${g}-${c}`;
+      const t=classTotal(key);
+      const v=countVotes(key);
+      const selectedAbstain=abstainVotes(key);
+      const missing=nonVoters(key);
       h+=`<div class="classBox"><div class="classTitle">${c}반</div><table class="miniTable"><tr>`;
-      normalCandidates().forEach(can=>h+=`<th>${can.num}번</th>`);
-      h+=`<th>기권</th></tr><tr>`;
-      normalCandidates().forEach(can=>h+=`<td>${countVotes(key,can.num)}</td>`);
-      h+=`<td>${a}</td></tr></table><div class="classSum">총계: ${t}</div></div>`;
+      normals.forEach(can=>h+=`<th>${can.num}번</th>`);
+      h+=`<th>기권</th><th>미투표</th></tr><tr>`;
+      normals.forEach(can=>h+=`<td>${countVotes(key,can.num)}</td>`);
+      h+=`<td>${selectedAbstain}</td><td>${missing}</td></tr></table><div class="classSum">투표: ${v} / 재적: ${t}</div></div>`;
     }
     h+=`</div>`;
   }
@@ -487,18 +527,21 @@ window.downloadWord=function(){
   a.click();
 };
 window.downloadExcel=function(){
-  const wb=XLSX.utils.book_new(), grades=gradeTotals();
+  const wb=XLSX.utils.book_new(), grades=gradeTotals(), normals=normalCandidates();
   const summary=[["구분",...Array.from({length:settings.gradeCount},(_,i)=>`${i+1}학년`),"계"]];
   summary.push(["선거인수",...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].total),Object.values(grades).reduce((a,g)=>a+g.total,0)]);
   summary.push(["투표자수",...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].voted),Object.values(grades).reduce((a,g)=>a+g.voted,0)]);
-  normalCandidates().forEach(c=>summary.push([`${c.num}번 ${c.name}`,...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].candidate[c.num]||0),Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].candidate[c.num]||0).reduce((a,b)=>a+b,0)]));
-  summary.push(["기권",...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].abstain),Object.values(grades).reduce((a,g)=>a+g.abstain,0)]);
+  normals.forEach(c=>summary.push([`${c.num}번 ${c.name}`,...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].candidate[c.num]||0),Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].candidate[c.num]||0).reduce((a,b)=>a+b,0)]));
+  summary.push(["기권",...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].selectedAbstain),Object.values(grades).reduce((a,g)=>a+g.selectedAbstain,0)]);
+  summary.push(["미투표(기권)",...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].nonVoter),Object.values(grades).reduce((a,g)=>a+g.nonVoter,0)]);
+  summary.push(["기권 계",...Array.from({length:settings.gradeCount},(_,i)=>grades[i+1].selectedAbstain+grades[i+1].nonVoter),Object.values(grades).reduce((a,g)=>a+g.selectedAbstain+g.nonVoter,0)]);
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(summary),"개표결과");
-  const rows=[["학년","반","재적","투표","기권",...normalCandidates().map(c=>`${c.num}번 ${c.name}`)]];
+
+  const rows=[["학년","반","재적","투표","기권","미투표(기권)",...normals.map(c=>`${c.num}번 ${c.name}`)]];
   for(let g=1;g<=settings.gradeCount;g++){
     for(let c=1;c<=settings.classCount;c++){
-      const key=`${g}-${c}`, t=classTotal(key), v=countVotes(key), a=Math.max(0,t-v);
-      rows.push([g,c,t,v,a,...normalCandidates().map(can=>countVotes(key,can.num))]);
+      const key=`${g}-${c}`, t=classTotal(key), v=countVotes(key);
+      rows.push([g,c,t,v,abstainVotes(key),nonVoters(key),...normals.map(can=>countVotes(key,can.num))]);
     }
   }
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),"반별집계");
