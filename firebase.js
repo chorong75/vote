@@ -19,9 +19,10 @@ export const DEFAULT_SETTINGS = {
   gradeCount:3,
   classCount:10,
   candidates:[
-    {num:1,name:"후보1"},
-    {num:2,name:"후보2"},
-    {num:3,name:"후보3"}
+    {num:1,name:"윤금채, 김세현, 이자연"},
+    {num:2,name:"위서준, 정지범, 강지수"},
+    {num:3,name:"장인영, 장채윤, 이서준"}
+    {num:4,name:"기권"},
   ],
   classes:{}
 };
