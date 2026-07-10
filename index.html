@@ -257,7 +257,7 @@ async function saveVote(){
       document.getElementById("votePanel").classList.remove("hidden");
       saving=false;
       render();
-    },1300);
+    },2000);
   }catch(err){
     console.error(err);
     alert(err.message || "투표 저장 실패");
