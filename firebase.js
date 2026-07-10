@@ -13,7 +13,7 @@ export {
 export const ELECTION_ID = "mainElectionV2";
 
 export const DEFAULT_SETTINGS = {
-  password:"0000",
+  password:"8975",
   schoolName:"○○고등학교",
   electionName:"47대 학생회장 선거",
   gradeCount:3,
