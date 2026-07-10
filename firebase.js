@@ -21,7 +21,7 @@ export const DEFAULT_SETTINGS = {
   candidates:[
     {num:1,name:"윤금채, 김세현, 이자연"},
     {num:2,name:"위서준, 정지범, 강지수"},
-    {num:3,name:"장인영, 장채윤, 이서준"}
+    {num:3,name:"장인영, 장채윤, 이서준"},
     {num:4,name:"기권"},
   ],
   classes:{}
