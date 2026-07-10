@@ -120,7 +120,8 @@
 
 <script type="module">
 import {
-  createFirebase, refs, DEFAULT_SETTINGS, DEFAULT_STATIONS, ensureClasses, ensureStations,
+  createFirebase, refs, DEFAULT_SETTINGS, DEFAULT_STATIONS, ADMIN_FALLBACK_PASSWORD,
+  ensureClasses, ensureStations,
   parseFirebaseInput, saveFirebaseConfig, getFirebaseConfig,
   getDoc, setDoc, onSnapshot, query, where, getDocs, deleteDoc, collection,
   withTimeout, escapeHtml
@@ -141,12 +142,28 @@ function msg(text,type="ok"){
 }
 
 window.login=function(){
-  const v=document.getElementById("passwordInput").value;
-  if(v===settings.password){
+  const v=String(
+    document.getElementById("passwordInput").value || ""
+  ).trim();
+
+  const firebasePassword=String(
+    settings?.password ?? ""
+  ).trim();
+
+  const fallbackPassword=String(
+    ADMIN_FALLBACK_PASSWORD
+  ).trim();
+
+  if(
+    v===firebasePassword ||
+    v===fallbackPassword
+  ){
     sessionStorage.setItem("schoolVoteV2Admin","true");
     document.getElementById("passwordInput").value="";
     showAdmin();
-  }else alert("비밀번호가 맞지 않습니다.");
+  }else{
+    alert("비밀번호가 맞지 않습니다.");
+  }
 };
 window.lockAdmin=function(){
   sessionStorage.removeItem("schoolVoteV2Admin");
