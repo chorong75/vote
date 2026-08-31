@@ -12,7 +12,7 @@
   <div class="top">
     <div class="brand" onclick="location.href='index.html'">
       <h1 id="topTitle">관리자</h1>
-      <p>SchoolVote v2.0 · 관리자 전용</p>
+      <p>SchoolVote v2.4 · 관리자 전용</p>
     </div>
     <div class="nav">
       <a href="index.html">학생 화면</a>
@@ -63,8 +63,10 @@
         <label>선거명</label><input id="electionName" oninput="markDirty()"/>
         <div class="row">
           <div><label>학년 수</label><input id="gradeCount" type="number" min="1" max="6" onchange="structureChanged()"/></div>
-          <div><label>학년별 반 수</label><input id="classCount" type="number" min="1" max="20" onchange="structureChanged()"/></div>
         </div>
+        <h3>학년별 반 수</h3>
+        <p class="muted">학년마다 실제 반 수를 각각 입력하세요. 예: 1학년 10반, 2학년 9반, 3학년 8반</p>
+        <div id="gradeClassCountSettings" class="gradeClassCountGrid"></div>
 
         <h3>후보 설정</h3>
         <div id="candidateSettings"></div>
@@ -121,7 +123,7 @@
 <script type="module">
 import {
   createFirebase, refs, DEFAULT_SETTINGS, DEFAULT_STATIONS, ADMIN_FALLBACK_PASSWORD,
-  ensureClasses, ensureStations,
+  ensureClasses, ensureStations, ensureClassCounts, getClassCount,
   parseFirebaseInput, saveFirebaseConfig, getFirebaseConfig,
   getDoc, setDoc, onSnapshot, query, where, getDocs, deleteDoc, collection,
   withTimeout, escapeHtml
@@ -208,7 +210,19 @@ window.updateCandidate=function(index, field, value){
 };
 window.structureChanged=function(){
   settings.gradeCount=Number(document.getElementById("gradeCount").value);
-  settings.classCount=Number(document.getElementById("classCount").value);
+  ensureClassCounts(settings);
+  ensureClasses(settings);
+  ensureStations(settings, stations);
+  markDirty();
+  renderSettings();
+  renderStationSettings();
+  renderTotals();
+};
+window.updateGradeClassCount=function(grade, value){
+  ensureClassCounts(settings);
+  const count=Math.max(1, Math.min(20, Number(value)||1));
+  settings.classCounts[grade]=count;
+  if(Number(grade)===1) settings.classCount=count; // 기존 데이터 호환
   ensureClasses(settings);
   ensureStations(settings, stations);
   markDirty();
@@ -274,10 +288,18 @@ function render(){
   renderResults();
 }
 function renderSettings(){
-  ["schoolName","electionName","gradeCount","classCount"].forEach(id=>{
+  ensureClassCounts(settings);
+  ["schoolName","electionName","gradeCount"].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.value=settings[id];
   });
+  const classCountWrap=document.getElementById("gradeClassCountSettings");
+  if(classCountWrap){
+    classCountWrap.innerHTML="";
+    for(let g=1; g<=Number(settings.gradeCount||3); g++){
+      classCountWrap.innerHTML+=`<div class="gradeClassCountItem"><label>${g}학년 반 수</label><input type="number" min="1" max="20" value="${getClassCount(settings,g)}" onchange="updateGradeClassCount(${g}, this.value)" oninput="markDirty()"></div>`;
+    }
+  }
   const wrap=document.getElementById("candidateSettings");
   if(wrap){
     wrap.innerHTML="";
@@ -325,9 +347,10 @@ window.saveStationSettings=async function(){
 function renderTotals(){
   const wrap=document.getElementById("classTotalInputs");
   if(!wrap) return;
-  const gc=Number(settings.gradeCount||3), cc=Number(settings.classCount||10);
+  const gc=Number(settings.gradeCount||3);
   wrap.innerHTML="";
   for(let g=1;g<=gc;g++){
+    const cc=getClassCount(settings,g);
     let items="";
     for(let c=1;c<=cc;c++){
       const key=`${g}-${c}`;
@@ -380,7 +403,7 @@ window.saveSettings=async function(){
   settings.schoolName=document.getElementById("schoolName").value;
   settings.electionName=document.getElementById("electionName").value;
   settings.gradeCount=Number(document.getElementById("gradeCount").value);
-  settings.classCount=Number(document.getElementById("classCount").value);
+  ensureClassCounts(settings);
   ensureClasses(settings);
   ensureStations(settings, stations);
   const btns=[document.getElementById("saveSettingsBtn"),document.getElementById("saveTotalsBtn")].filter(Boolean);
@@ -401,7 +424,7 @@ window.applyBulkTotal=async function(){
   const v=Number(document.getElementById("bulkTotal").value);
   if(!confirm(`전체 반 재적을 ${v}명으로 적용하고 저장할까요?`)) return;
   for(let g=1;g<=settings.gradeCount;g++){
-    for(let c=1;c<=settings.classCount;c++){
+    for(let c=1;c<=getClassCount(settings,g);c++){
       settings.classes[`${g}-${c}`]={grade:g,classNo:c,total:v};
     }
   }
@@ -422,7 +445,7 @@ function renderManage(){
     const total=classTotal(st.currentClass);
     const voted=countVotes(st.currentClass);
     const pct=total?Math.min(100,Math.round(voted/total*100)):0;
-    const btns=Array.from({length:Number(settings.classCount||10)},(_,i)=>{
+    const btns=Array.from({length:getClassCount(settings,g)},(_,i)=>{
       const classKey=`${g}-${i+1}`;
       const t=classTotal(classKey);
       const v=countVotes(classKey);
@@ -491,7 +514,7 @@ function gradeTotals(){
     grades[g]={total:0,voted:0,selectedAbstain:0,nonVoter:0,candidate:{}};
   }
   Object.values(settings.classes).forEach(cls=>{
-    if(cls.grade>settings.gradeCount || cls.classNo>settings.classCount) return;
+    if(cls.grade>settings.gradeCount || cls.classNo>getClassCount(settings,cls.grade)) return;
     const key=`${cls.grade}-${cls.classNo}`;
     const voted=countVotes(key);
     const selectedAbstain=abstainVotes(key);
@@ -558,7 +581,7 @@ function resultHTML(){
 
   for(let g=1;g<=settings.gradeCount;g++){
     h+=`<div class="resultTitle" style="font-size:24px;margin-top:30px">${escapeHtml(settings.electionName)} 집계표(${g}학년)</div><div class="classReportGrid">`;
-    for(let c=1;c<=settings.classCount;c++){
+    for(let c=1;c<=getClassCount(settings,g);c++){
       const key=`${g}-${c}`;
       const t=classTotal(key);
       const v=countVotes(key);
@@ -599,7 +622,7 @@ window.downloadExcel=function(){
 
   const rows=[["학년","반","재적","투표","기권","미투표(기권)",...normals.map(c=>`${c.num}번 ${c.name}`)]];
   for(let g=1;g<=settings.gradeCount;g++){
-    for(let c=1;c<=settings.classCount;c++){
+    for(let c=1;c<=getClassCount(settings,g);c++){
       const key=`${g}-${c}`, t=classTotal(key), v=countVotes(key);
       rows.push([g,c,t,v,abstainVotes(key),nonVoters(key),...normals.map(can=>countVotes(key,can.num))]);
     }

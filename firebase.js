@@ -18,7 +18,8 @@ export const DEFAULT_SETTINGS = {
   schoolName:"○○고등학교",
   electionName:"47대 학생회장 선거",
   gradeCount:3,
-  classCount:10,
+  classCount:10, // 기존 설정 호환용 기본값
+  classCounts:{1:10,2:10,3:10},
   candidates:[
     {num:1,name:"윤금채, 김세현, 이자연"},
     {num:2,name:"위서준, 정지범, 강지수"},
@@ -69,11 +70,30 @@ export function createFirebase(){
   return {app, db, cfg};
 }
 
+export function ensureClassCounts(settings){
+  const gc=Number(settings.gradeCount)||3;
+  const legacy=Number(settings.classCount)||10;
+  if(!settings.classCounts || typeof settings.classCounts!=="object") settings.classCounts={};
+  for(let g=1; g<=gc; g++){
+    const value=Number(settings.classCounts[g]);
+    settings.classCounts[g]=value>0 ? value : legacy;
+  }
+  // 예전 버전의 classCount는 첫 학년 값을 보관해 호환성을 유지합니다.
+  settings.classCount=Number(settings.classCounts[1])||legacy;
+  return settings.classCounts;
+}
+
+export function getClassCount(settings, grade){
+  ensureClassCounts(settings);
+  return Number(settings.classCounts?.[grade]) || Number(settings.classCount) || 10;
+}
+
 export function ensureClasses(settings){
   const gc=Number(settings.gradeCount)||3;
-  const cc=Number(settings.classCount)||10;
+  ensureClassCounts(settings);
   if(!settings.classes) settings.classes={};
   for(let g=1; g<=gc; g++){
+    const cc=getClassCount(settings,g);
     for(let c=1; c<=cc; c++){
       const key=`${g}-${c}`;
       if(!settings.classes[key]) settings.classes[key]={grade:g,classNo:c,total:28};
@@ -83,10 +103,17 @@ export function ensureClasses(settings){
 
 export function ensureStations(settings, stations){
   const gc=Number(settings.gradeCount)||3;
+  ensureClassCounts(settings);
   for(let g=1; g<=gc; g++){
     const key=`grade${g}`;
-    if(!stations[key]) stations[key]={name:`제 ${g}투표소`,location:"",grade:g,currentClass:`${g}-1`,isOpen:false};
+    const firstClass=`${g}-1`;
+    if(!stations[key]) stations[key]={name:`제 ${g}투표소`,location:"",grade:g,currentClass:firstClass,isOpen:false};
     if(stations[key].location===undefined) stations[key].location="";
+    const currentNo=Number(String(stations[key].currentClass||"").split("-")[1]);
+    if(!currentNo || currentNo>getClassCount(settings,g)){
+      stations[key].currentClass=firstClass;
+      stations[key].isOpen=false;
+    }
   }
 }
 

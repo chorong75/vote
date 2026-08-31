@@ -544,3 +544,22 @@ th{font-weight:1000;background:#f8fafc}
   font-weight:700;
   color:var(--muted);
 }
+
+/* v2.4 per-grade class count settings */
+.gradeClassCountGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin-top:8px;
+}
+.gradeClassCountItem{
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:var(--soft2);
+}
+.gradeClassCountItem label{margin-top:0}
+.gradeClassCountItem input{text-align:center;font-weight:900}
+@media(max-width:700px){
+  .gradeClassCountGrid{grid-template-columns:1fr}
+}
